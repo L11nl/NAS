@@ -2,61 +2,27 @@
 <html lang="ar" dir="rtl">
 <head>
     <meta charset="UTF-8">
-    <title>NAS | الإدارة المالية V6.1</title>
+    <title>NAS | الإدارة المالية V6.2</title>
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;900&display=swap" rel="stylesheet">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <style>
-        body { 
-            font-family: 'Cairo', sans-serif; 
-            background-color: #0f172a; 
-            -webkit-tap-highlight-color: transparent;
-        }
+        body { font-family: 'Cairo', sans-serif; background-color: #0f172a; overflow-x: hidden; }
+        .glass-card { background: rgba(30, 41, 59, 0.7); backdrop-filter: blur(10px); border: 1px solid rgba(255,255,255,0.05); transition: 0.3s; }
+        .tab-active { border-bottom: 4px solid #3b82f6; color: #3b82f6; background: rgba(59, 130, 246, 0.1); }
+        .input-field { background: #1e293b; border: 1px solid #334155; color: white; transition: 0.2s; }
+        .input-field:focus { border-color: #3b82f6; outline: none; }
         
-        /* تأثيرات 3D خفيفة وسلسة */
-        .glass-card { 
-            background: rgba(30, 41, 59, 0.7); 
-            backdrop-filter: blur(10px); 
-            border: 1px solid rgba(255,255,255,0.05);
-            transition: transform 0.2s ease, box-shadow 0.2s ease;
-            will-change: transform;
-        }
-        .glass-card:active {
-            transform: scale(0.98);
-        }
-
-        .input-field { 
-            background: #1e293b; 
-            border: 1px solid #334155; 
-            color: white; 
-        }
-
-        .tab-active { 
-            border-bottom: 4px solid #3b82f6; 
-            color: #3b82f6; 
-            background: rgba(59, 130, 246, 0.1);
-        }
-
-        /* وصل ديناميكي ناعم */
-        .dynamic-receipt {
-            background: linear-gradient(145deg, #ffffff, #f1f5f9);
-            position: relative;
-        }
-
-        .status-btn {
-            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-        }
-
+        /* تصميم الوصل الديناميكي */
+        .receipt-paid { background: linear-gradient(135deg, #ffffff 0%, #f0fdf4 100%); border: 2px solid #22c55e; }
+        .receipt-unpaid { background: linear-gradient(135deg, #ffffff 0%, #fef2f2 100%); border: 2px solid #ef4444; }
+        
         .fade-in { animation: fadeIn 0.3s ease-out; }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
     </style>
 </head>
-<body class="text-slate-200">
-
-    <div id="expiryAlert" class="hidden bg-red-600 text-white p-2 text-center text-xs font-bold sticky top-0 z-50">
-        ⚠️ تنبيه: توجد اشتراكات منتهية!
-    </div>
+<body class="text-slate-200 pb-10">
 
     <nav class="flex bg-slate-900/90 backdrop-blur-md border-b border-slate-700 sticky top-0 z-40">
         <button onclick="showTab('add')" id="tabAdd" class="flex-1 p-4 font-bold tab-active text-xs">➕ إضافة</button>
@@ -65,78 +31,86 @@
     </nav>
 
     <div class="p-4 max-w-2xl mx-auto">
-
         <div id="viewAdd" class="space-y-4 fade-in">
-            <div class="glass-card p-6 rounded-[2rem] space-y-4 shadow-xl">
+            <div class="glass-card p-6 rounded-[2rem] space-y-4">
                 <input id="name" class="input-field p-4 rounded-2xl w-full" placeholder="اسم الزبون">
-                
                 <div class="flex gap-2">
                     <span class="bg-slate-700 p-4 rounded-2xl text-slate-400 text-sm flex items-center">964+</span>
                     <input id="phone" type="tel" class="input-field p-4 rounded-2xl w-full font-mono" placeholder="77XXXXXXXX">
                 </div>
-
-                <div class="space-y-2">
-                    <div class="grid grid-cols-2 sm:grid-cols-3 gap-2" id="servicesGrid">
-                        <button onclick="setService(this, 'Canva Pro')" class="bg-slate-800 p-3 rounded-xl text-xs border border-slate-700">Canva Pro</button>
-                        <button onclick="setService(this, 'ChatGPT')" class="bg-slate-800 p-3 rounded-xl text-xs border border-slate-700">ChatGPT</button>
-                        <button onclick="setService(this, 'CapCut')" class="bg-slate-800 p-3 rounded-xl text-xs border border-slate-700">CapCut</button>
-                        <button onclick="toggleCustomService(true)" id="otherBtn" class="bg-slate-800 p-3 rounded-xl text-xs border border-slate-700">أخرى +</button>
-                    </div>
-                    <input id="customService" class="hidden input-field p-4 rounded-2xl w-full mt-2" placeholder="اسم الخدمة...">
+                <div class="grid grid-cols-2 sm:grid-cols-4 gap-2" id="servicesGrid">
+                    <button onclick="setService(this, 'Canva Pro')" class="bg-slate-800 p-3 rounded-xl text-[10px] border border-slate-700">Canva</button>
+                    <button onclick="setService(this, 'ChatGPT')" class="bg-slate-800 p-3 rounded-xl text-[10px] border border-slate-700">ChatGPT</button>
+                    <button onclick="setService(this, 'CapCut')" class="bg-slate-800 p-3 rounded-xl text-[10px] border border-slate-700">CapCut</button>
+                    <button onclick="toggleCustomService()" class="bg-slate-800 p-3 rounded-xl text-[10px] border border-slate-700">أخرى</button>
                 </div>
-
-                <input id="price" type="number" class="input-field p-4 rounded-2xl w-full font-bold text-blue-400" placeholder="السعر د.ع">
-
-                <div class="space-y-2">
-                    <div class="grid grid-cols-4 gap-2">
-                        <button onclick="calcEndDate(30)" class="bg-slate-800 p-2 rounded-xl text-[10px] border border-slate-700">شهر</button>
-                        <button onclick="calcEndDate(90)" class="bg-slate-800 p-2 rounded-xl text-[10px] border border-slate-700">3 أشهر</button>
-                        <button onclick="calcEndDate(365)" class="bg-slate-800 p-2 rounded-xl text-[10px] border border-slate-700">سنة</button>
-                    </div>
-                    <input type="date" id="expDate" class="input-field p-4 rounded-2xl w-full text-sm">
-                </div>
-
+                <input id="customService" class="hidden input-field p-4 rounded-2xl w-full" placeholder="اسم الخدمة...">
+                <input id="price" type="number" class="input-field p-4 rounded-2xl w-full font-bold text-blue-400" placeholder="السعر (د.ع)">
+                <input type="date" id="expDate" class="input-field p-4 rounded-2xl w-full text-sm">
                 <div class="grid grid-cols-2 gap-2">
                     <input id="insta" class="input-field p-3 rounded-xl w-full text-xs" placeholder="يوزر انستغرام">
-                    <button id="btnPaidMain" class="bg-slate-800 p-3 rounded-xl text-xs border border-slate-700" onclick="setPaid(!selectedPaid)">الحالة: جاري التحديد</button>
+                    <button id="btnPaidMain" class="bg-slate-800 p-3 rounded-xl text-xs border border-slate-700" onclick="setPaid(!selectedPaid)">تحديد الحالة</button>
                 </div>
-
-                <button id="mainBtn" class="w-full bg-blue-600 hover:bg-blue-500 text-white font-black py-4 rounded-2xl shadow-lg transition-all" onclick="saveClient()">💾 حفظ البيانات</button>
+                <button id="mainBtn" class="w-full bg-blue-600 hover:bg-blue-500 text-white font-black py-4 rounded-2xl" onclick="saveClient()">💾 حفظ البيانات</button>
             </div>
         </div>
 
         <div id="viewList" class="hidden space-y-4 fade-in">
-            <input id="search" oninput="render()" class="input-field p-4 rounded-2xl w-full shadow-lg" placeholder="🔍 بحث عن زبون...">
-            <div id="clientsList" class="space-y-4 pb-20"></div>
+            <input id="search" oninput="render()" class="input-field p-4 rounded-2xl w-full" placeholder="🔍 ابحث عن زبون...">
+            <div id="clientsList" class="space-y-4"></div>
         </div>
     </div>
 
-    <div id="receiptModal" class="fixed inset-0 bg-black/90 hidden z-50 flex items-center justify-center p-4">
-        <div class="w-full max-w-xs">
-            <div id="printableReceipt" class="dynamic-receipt p-8 rounded-[2.5rem] text-slate-900 text-right shadow-2xl">
-                <div class="text-center mb-4 border-b pb-4">
-                    <h3 class="text-3xl font-black text-blue-600">NAS</h3>
+    <div id="statsModal" class="fixed inset-0 bg-black/90 hidden z-50 flex items-center justify-center p-6 backdrop-blur-md">
+        <div class="glass-card w-full max-w-sm p-8 rounded-[2.5rem] border-blue-500/30 text-center">
+            <h2 class="text-2xl font-black mb-6 text-blue-400">📊 التقرير المالي</h2>
+            <div class="space-y-4 text-right">
+                <div class="bg-green-500/10 p-4 rounded-2xl border border-green-500/20">
+                    <p class="text-[10px] text-green-400 font-bold uppercase">المبالغ المستلمة</p>
+                    <h3 id="totalPaid" class="text-xl font-black text-white">0</h3>
                 </div>
-                <div class="space-y-3 py-2 text-sm font-bold">
+                <div class="bg-red-500/10 p-4 rounded-2xl border border-red-500/20">
+                    <p class="text-[10px] text-red-400 font-bold uppercase">الديون (غير مدفوع)</p>
+                    <h3 id="totalUnpaid" class="text-xl font-black text-white">0</h3>
+                </div>
+                <div class="bg-blue-500/10 p-4 rounded-2xl border border-blue-500/20">
+                    <p class="text-[10px] text-blue-400 font-bold uppercase">عدد المشتركين</p>
+                    <h3 id="totalCount" class="text-xl font-black text-white">0</h3>
+                </div>
+            </div>
+            <button onclick="el('statsModal').classList.add('hidden')" class="mt-8 w-full bg-slate-700 p-3 rounded-xl font-bold">إغلاق</button>
+        </div>
+    </div>
+
+    <div id="receiptModal" class="fixed inset-0 bg-black/95 hidden z-50 flex items-center justify-center p-4">
+        <div class="w-full max-w-xs">
+            <div id="printableReceipt" class="p-8 rounded-[2.5rem] text-slate-900 text-right shadow-2xl transition-all">
+                <div class="text-center mb-4 border-b pb-4">
+                    <h3 class="text-4xl font-black text-blue-600">NAS</h3>
+                </div>
+                <div class="space-y-4 py-2 font-bold text-sm">
                     <div class="flex justify-between"><span>الزبون:</span> <span id="rName"></span></div>
                     <div class="flex justify-between"><span>الخدمة:</span> <span id="rService" class="text-blue-600"></span></div>
-                    <div class="flex justify-between"><span>السعر:</span> <span id="rPrice"></span></div>
+                    <div class="flex justify-between text-lg"><span>السعر:</span> <span id="rPrice"></span></div>
                     <div class="flex justify-between text-[10px] text-slate-500"><span>ينتهي في:</span> <span id="rEnd"></span></div>
-                    <div class="flex justify-between"><span>الحالة:</span> <span id="rStatusText"></span></div>
+                    <div class="flex justify-between py-2 border-y border-slate-100 items-center">
+                        <span>الحالة:</span> 
+                        <span id="rStatusText" class="px-4 py-1 rounded-full text-xs text-white"></span>
+                    </div>
                 </div>
-                <div class="mt-4 pt-4 border-t text-center text-[10px] font-black">
-                    Instagram: 📸 l11nl
+                <div class="mt-6 flex items-center justify-center gap-2 text-[11px] font-black">
+                    <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="2" width="20" height="20" rx="5" ry="5"></rect><path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"></path><line x1="17.5" y1="6.5" x2="17.51" y2="6.5"></line></svg>
+                    INSTAGRAM: L11NL
                 </div>
             </div>
             <div class="grid grid-cols-2 gap-2 mt-4">
-                <button onclick="shareReceiptImage()" class="bg-blue-600 text-white p-4 rounded-xl font-bold text-xs">حفظ صورة</button>
-                <button onclick="el('receiptModal').classList.add('hidden')" class="bg-slate-700 text-white p-4 rounded-xl font-bold text-xs">إغلاق</button>
+                <button onclick="shareReceiptImage()" class="bg-blue-600 text-white p-4 rounded-xl font-bold text-xs">حفظ الصورة</button>
+                <button onclick="el('receiptModal').classList.add('hidden')" class="bg-slate-800 text-white p-4 rounded-xl font-bold text-xs">إغلاق</button>
             </div>
         </div>
     </div>
 
     <script>
-        // العودة للمفتاح الأصلي لضمان استرجاع البيانات
         const STORAGE_KEY = "NAS_STABLE_V5_DATA";
         let clients = JSON.parse(localStorage.getItem(STORAGE_KEY)) || [];
         let selectedService = "";
@@ -165,15 +139,9 @@
             selectedService = "CUSTOM";
         }
 
-        function calcEndDate(days) {
-            const date = new Date();
-            date.setDate(date.getDate() + days);
-            el('expDate').value = date.toISOString().split('T')[0];
-        }
-
         function setPaid(status) {
             selectedPaid = status;
-            el('btnPaidMain').textContent = status ? "الحالة: مدفوع ✅" : "الحالة: غير مدفوع ❌";
+            el('btnPaidMain').textContent = status ? "مدفوع ✅" : "غير مدفوع ❌";
             el('btnPaidMain').className = status ? "bg-green-600 p-3 rounded-xl text-xs text-white" : "bg-red-600 p-3 rounded-xl text-xs text-white";
         }
 
@@ -187,17 +155,13 @@
                 paid: selectedPaid,
                 end: el('expDate').value
             };
-
-            if (!data.name || !data.service || !data.end) return alert("اكمل البيانات");
-
+            if (!data.name || !data.service) return alert("يرجى إكمال البيانات");
             if (editIndex !== null) clients[editIndex] = data;
             else clients.unshift(data);
-
             localStorage.setItem(STORAGE_KEY, JSON.stringify(clients));
             location.reload();
         }
 
-        // زر تبديل الحالة بضغطة واحدة من القائمة
         function toggleQuickPaid(i) {
             clients[i].paid = !clients[i].paid;
             localStorage.setItem(STORAGE_KEY, JSON.stringify(clients));
@@ -208,7 +172,6 @@
             const q = el('search').value.toLowerCase();
             const list = el('clientsList');
             list.innerHTML = "";
-
             clients.forEach((c, i) => {
                 if (c.name.toLowerCase().includes(q)) {
                     list.innerHTML += `
@@ -216,17 +179,17 @@
                             <div class="flex justify-between items-center">
                                 <div>
                                     <h3 class="font-black text-lg">${c.name}</h3>
-                                    <p class="text-xs text-blue-400 font-bold">${c.service} | ${c.price} د.ع</p>
+                                    <p class="text-[10px] text-blue-400 font-bold">${c.service} • ${c.price.toLocaleString()} د.ع</p>
                                 </div>
-                                <button onclick="toggleQuickPaid(${i})" class="status-btn px-4 py-2 rounded-full text-[10px] font-black ${c.paid ? 'bg-green-600/20 text-green-500' : 'bg-red-600/20 text-red-500'}">
+                                <button onclick="toggleQuickPaid(${i})" class="px-4 py-2 rounded-full text-[10px] font-black ${c.paid ? 'bg-green-600 text-white' : 'bg-red-600 text-white'}">
                                     ${c.paid ? 'مدفوع ✅' : 'غير مدفوع ❌'}
                                 </button>
                             </div>
                             <div class="flex gap-2 mt-4 pt-4 border-t border-slate-700/30">
                                 <button onclick="openReceipt(${i})" class="bg-white text-black font-black p-2 px-4 rounded-xl text-[10px]">وصل 📄</button>
-                                <button onclick="shareToWhatsApp(${i})" class="bg-green-600 p-2 px-4 rounded-xl text-[10px]">واتساب</button>
+                                <button onclick="shareToInsta(${i})" class="p-2 px-3 bg-gradient-to-tr from-yellow-400 to-purple-600 rounded-xl text-white text-xs">📸</button>
                                 <button onclick="editClient(${i})" class="bg-slate-700 p-2 px-4 rounded-xl text-[10px]">تعديل</button>
-                                <button onclick="deleteClient(${i})" class="mr-auto text-red-500 text-xs">🗑️</button>
+                                <button onclick="deleteClient(${i})" class="mr-auto text-red-500">🗑️</button>
                             </div>
                         </div>
                     `;
@@ -236,18 +199,37 @@
 
         function openReceipt(i) {
             const c = clients[i];
+            const modal = el('printableReceipt');
             el('rName').textContent = c.name;
             el('rService').textContent = c.service;
             el('rPrice').textContent = c.price.toLocaleString() + " د.ع";
             el('rEnd').textContent = c.end;
-            el('rStatusText').textContent = c.paid ? "مدفوع ✅" : "غير مدفوع ❌";
+            
+            if (c.paid) {
+                modal.className = "receipt-paid p-8 rounded-[2.5rem] text-slate-900 text-right shadow-2xl";
+                el('rStatusText').textContent = "مدفوع";
+                el('rStatusText').style.backgroundColor = "#22c55e";
+            } else {
+                modal.className = "receipt-unpaid p-8 rounded-[2.5rem] text-slate-900 text-right shadow-2xl";
+                el('rStatusText').textContent = "غير مدفوع";
+                el('rStatusText').style.backgroundColor = "#ef4444";
+            }
             el('receiptModal').classList.remove('hidden');
         }
 
-        function shareToWhatsApp(i) {
+        function shareToInsta(i) {
             const c = clients[i];
-            const text = encodeURIComponent(`وصل اشتراك NAS\nالزبون: ${c.name}\nالخدمة: ${c.service}\nالحالة: ${c.paid ? 'مدفوع' : 'غير مدفوع'}`);
-            window.open(`https://wa.me/964${c.phone}?text=${text}`);
+            if(c.insta) window.open(`https://www.instagram.com/${c.insta.replace('@','')}`, '_blank');
+            else alert("لا يوجد يوزر انستغرام");
+        }
+
+        function openStats() {
+            let p = 0, u = 0;
+            clients.forEach(c => c.paid ? p += c.price : u += c.price);
+            el('totalPaid').textContent = p.toLocaleString() + " د.ع";
+            el('totalUnpaid').textContent = u.toLocaleString() + " د.ع";
+            el('totalCount').textContent = clients.length;
+            el('statsModal').classList.remove('hidden');
         }
 
         function editClient(i) {
@@ -263,7 +245,7 @@
         }
 
         function deleteClient(i) {
-            if(confirm("حذف؟")) {
+            if(confirm("حذف المشترك؟")) {
                 clients.splice(i, 1);
                 localStorage.setItem(STORAGE_KEY, JSON.stringify(clients));
                 render();
@@ -271,7 +253,7 @@
         }
 
         async function shareReceiptImage() {
-            const canvas = await html2canvas(el('printableReceipt'), { scale: 2 });
+            const canvas = await html2canvas(el('printableReceipt'), { scale: 3 });
             const link = document.createElement('a');
             link.download = 'NAS_Receipt.png';
             link.href = canvas.toDataURL();
