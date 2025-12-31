@@ -2,182 +2,165 @@
 <html lang="ar" dir="rtl">
 <head>
     <meta charset="UTF-8">
-    <title>NAS Pro | إدارة الاشتراكات المتطورة</title>
+    <title>NAS Pro | الإصدار المتطور</title>
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;900&display=swap" rel="stylesheet">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <style>
         body { font-family: 'Cairo', sans-serif; background-color: #0f172a; }
         .glass-card { background: rgba(30, 41, 59, 0.7); backdrop-filter: blur(10px); border: 1px solid rgba(255,255,255,0.1); }
         .input-field { background: #1e293b; border: 1px solid #334155; transition: all 0.3s; color: white; }
-        .tab-btn { border-bottom: 3px solid transparent; }
-        .tab-active { border-color: #3b82f6; color: #3b82f6; background: rgba(59, 130, 246, 0.1); }
-        .btn-active { background-color: #3b82f6 !important; color: white !important; }
-        #receipt-canvas { width: 350px; padding: 20px; background: white; color: black; position: fixed; left: -9999px; }
+        .tab-active { border-bottom: 3px solid #3b82f6; color: #3b82f6; background: rgba(59, 130, 246, 0.05); }
+        .btn-service { border: 1px solid #334155; transition: 0.2s; }
+        .btn-active { background-color: #3b82f6 !important; border-color: #60a5fa !important; color: white !important; }
+        #receipt-render { width: 350px; padding: 25px; background: white; color: black; border-radius: 20px; text-align: center; }
     </style>
 </head>
-<body class="text-slate-200 pb-20">
+<body class="text-slate-200">
 
-    <div id="expiryAlert" class="hidden bg-red-600 text-white p-3 text-center text-sm font-bold sticky top-0 z-50 animate-pulse">
-        ⚠️ تنبيه: هناك اشتراكات منتهية تحتاج مراجعة!
+    <div id="expiryAlert" class="hidden bg-red-600 text-white p-2 text-center text-xs font-bold sticky top-0 z-50">
+        ⚠️ تنبيه: توجد اشتراكات منتهية!
     </div>
 
-    <nav class="flex justify-around bg-slate-800 sticky top-0 z-40 border-b border-slate-700">
-        <button onclick="showTab('add')" id="tabAdd" class="tab-btn flex-1 p-4 font-bold tab-active">➕ إضافة مشترك</button>
-        <button onclick="showTab('list')" id="tabList" class="tab-btn flex-1 p-4 font-bold">🔍 قائمة الزبائن</button>
+    <nav class="flex bg-slate-800 border-b border-slate-700 sticky top-0 z-40">
+        <button onclick="showTab('add')" id="tabAdd" class="flex-1 p-4 font-bold tab-active">➕ إضافة/تعديل</button>
+        <button onclick="showTab('list')" id="tabList" class="flex-1 p-4 font-bold">🔍 قائمة الزبائن</button>
     </nav>
 
     <div class="p-4 max-w-2xl mx-auto">
 
         <div id="viewAdd" class="space-y-4">
-            <h2 class="text-xl font-bold text-blue-400 mb-4">بيانات المشترك الجديد</h2>
             <div class="glass-card p-6 rounded-3xl space-y-4">
                 <input id="name" class="input-field p-3 rounded-xl w-full" placeholder="اسم الزبون">
                 
                 <div class="flex gap-2">
                     <span class="bg-slate-700 p-3 rounded-xl text-slate-400 text-sm flex items-center">964+</span>
-                    <input id="phone" class="input-field p-3 rounded-xl w-full" placeholder="رقم الهاتف">
+                    <input id="phone" type="tel" class="input-field p-3 rounded-xl w-full" placeholder="77XXXXXXXX">
+                </div>
+
+                <div class="space-y-2">
+                    <label class="text-xs text-slate-400">اختر الخدمة:</label>
+                    <div class="grid grid-cols-2 sm:grid-cols-3 gap-2" id="servicesGrid">
+                        <button onclick="setService(this, 'Canva Pro')" class="btn-service bg-slate-800 p-2 rounded-xl text-xs">Canva Pro</button>
+                        <button onclick="setService(this, 'ChatGPT')" class="btn-service bg-slate-800 p-2 rounded-xl text-xs">ChatGPT</button>
+                        <button onclick="setService(this, 'CapCut')" class="btn-service bg-slate-800 p-2 rounded-xl text-xs">CapCut</button>
+                        <button onclick="setService(this, 'Gemini')" class="btn-service bg-slate-800 p-2 rounded-xl text-xs">Gemini</button>
+                        <button onclick="toggleCustomService(true)" id="otherBtn" class="btn-service bg-slate-800 p-2 rounded-xl text-xs">اسم آخر +</button>
+                    </div>
+                    <input id="customService" class="hidden input-field p-3 rounded-xl w-full mt-2" placeholder="اكتب اسم الخدمة هنا...">
                 </div>
 
                 <div class="grid grid-cols-2 gap-2">
-                    <input id="service" class="input-field p-3 rounded-xl w-full" placeholder="الخدمة (مثلاً: ChatGPT)">
-                    <input id="insta" class="input-field p-3 rounded-xl w-full" placeholder="يوزر انستغرام">
+                    <input id="insta" class="input-field p-3 rounded-xl w-full text-sm" placeholder="يوزر انستغرام">
+                    <input id="link" class="input-field p-3 rounded-xl w-full text-sm" placeholder="رابط الحساب">
                 </div>
 
-                <input id="link" class="input-field p-3 rounded-xl w-full" placeholder="رابط الحساب">
-                
-                <div class="space-y-2">
-                    <label class="text-xs text-slate-400">مدة الاشتراك:</label>
-                    <div class="grid grid-cols-3 gap-2" id="daysContainer">
-                        <button class="bg-slate-800 p-2 rounded-lg text-xs border border-slate-600" onclick="setDays(this, 30)">شهر</button>
-                        <button class="bg-slate-800 p-2 rounded-lg text-xs border border-slate-600" onclick="setDays(this, 90)">3 أشهر</button>
-                        <button class="bg-slate-800 p-2 rounded-lg text-xs border border-slate-600" onclick="setDays(this, 365)">سنة</button>
-                    </div>
-                    <div class="flex flex-col gap-1 mt-2">
-                        <label class="text-[10px] text-slate-400">أو اختر تاريخاً محدداً:</label>
-                        <input type="date" id="customDate" class="input-field p-2 rounded-lg w-full text-sm" onchange="setCustomDate(this.value)">
-                    </div>
+                <div class="space-y-2 border-t border-slate-700 pt-4">
+                    <label class="text-xs text-slate-400">تاريخ انتهاء الاشتراك:</label>
+                    <input type="date" id="expDate" class="input-field p-3 rounded-xl w-full">
                 </div>
 
-                <div class="flex gap-4">
-                    <button id="btnPaid" class="flex-1 bg-slate-800 p-3 rounded-xl border border-slate-600" onclick="setPaid(true)">✅ مدفوع</button>
-                    <button id="btnUnpaid" class="flex-1 bg-slate-800 p-3 rounded-xl border border-slate-600" onclick="setPaid(false)">❌ غير مدفوع</button>
+                <div class="flex gap-2">
+                    <button id="btnPaid" class="flex-1 bg-slate-800 p-3 rounded-xl border border-slate-700" onclick="setPaid(true)">✅ مدفوع</button>
+                    <button id="btnUnpaid" class="flex-1 bg-slate-800 p-3 rounded-xl border border-slate-700" onclick="setPaid(false)">❌ غير مدفوع</button>
                 </div>
 
-                <textarea id="notes" class="input-field p-3 rounded-xl w-full h-20" placeholder="ملاحظات إضافية..."></textarea>
+                <textarea id="notes" class="input-field p-3 rounded-xl w-full h-20" placeholder="ملاحظات تذكيرية..."></textarea>
 
-                <button id="mainBtn" class="w-full bg-blue-600 hover:bg-blue-500 text-white font-bold py-4 rounded-2xl shadow-lg transition-all" onclick="saveClient()">💾 حفظ الزبون</button>
+                <button id="mainBtn" class="w-full bg-blue-600 hover:bg-blue-500 text-white font-black py-4 rounded-2xl shadow-xl transition-all" onclick="saveClient()">💾 حفظ البيانات</button>
             </div>
         </div>
 
         <div id="viewList" class="hidden space-y-4">
             <div class="relative">
-                <input id="search" oninput="render()" class="input-field p-4 pr-12 rounded-2xl w-full" placeholder="ابحث باسم الزبون أو الرقم...">
+                <input id="search" oninput="render()" class="input-field p-4 pr-12 rounded-2xl w-full shadow-lg" placeholder="بحث بالاسم أو الرقم...">
                 <span class="absolute right-4 top-4 opacity-30">🔍</span>
             </div>
-            
             <div id="clientsList" class="space-y-4"></div>
         </div>
 
     </div>
 
-    <div id="receiptModal" class="fixed inset-0 bg-black/80 hidden z-50 flex items-center justify-center p-4">
-        <div class="bg-white text-slate-900 p-6 rounded-3xl w-full max-w-sm text-center">
-            <div id="printableReceipt" class="p-4 border-2 border-dashed border-slate-300 rounded-2xl mb-4">
-                <h3 class="text-2xl font-black text-blue-600">NAS SYSTEM</h3>
-                <p class="text-xs text-slate-500 mb-4">وصل تأكيد اشتراك</p>
-                <div class="text-right space-y-2 text-sm border-t pt-4">
-                    <p><b>الزبون:</b> <span id="rName"></span></p>
-                    <p><b>الخدمة:</b> <span id="rService"></span></p>
-                    <p><b>تاريخ الانتهاء:</b> <span id="rEnd"></span></p>
-                    <p><b>الحالة:</b> <span class="text-green-600 font-bold">تم الدفع ✅</span></p>
+    <div id="receiptModal" class="fixed inset-0 bg-black/90 hidden z-50 flex items-center justify-center p-4">
+        <div class="w-full max-w-xs">
+            <div id="printableReceipt" class="bg-white p-6 rounded-3xl text-slate-900 shadow-2xl overflow-hidden relative">
+                <div class="absolute top-0 right-0 w-16 h-16 bg-blue-500 rotate-45 translate-x-8 -translate-y-8"></div>
+                <h3 class="text-2xl font-black text-blue-600 mb-1">NAS SYSTEM</h3>
+                <p class="text-[10px] text-slate-400 uppercase tracking-widest mb-4">Subscription Receipt</p>
+                
+                <div class="space-y-3 text-right border-t border-b border-slate-100 py-4 mb-4">
+                    <div class="flex justify-between"><span class="text-slate-400">الزبون:</span> <span class="font-bold" id="rName"></span></div>
+                    <div class="flex justify-between"><span class="text-slate-400">الخدمة:</span> <span class="font-bold text-blue-600" id="rService"></span></div>
+                    <div class="flex justify-between"><span class="text-slate-400">ينتهي في:</span> <span class="font-bold" id="rEnd"></span></div>
+                    <div class="flex justify-between"><span class="text-slate-400">الحالة:</span> <span class="text-green-600 font-bold">تم الدفع ✅</span></div>
                 </div>
-                <p class="mt-6 text-[10px] text-slate-400 text-center">شكراً لثقتكم بنا ✨</p>
+                <p class="text-[10px] text-slate-400">شكراً لاختيارك خدماتنا، نتمنى لك تجربة ممتعة!</p>
             </div>
-            <div class="grid grid-cols-2 gap-2">
-                <button onclick="downloadReceipt()" class="bg-blue-600 text-white p-3 rounded-xl font-bold text-sm">💾 حفظ صورة</button>
-                <button onclick="shareReceiptText()" class="bg-green-600 text-white p-3 rounded-xl font-bold text-sm">📤 مشاركة نص</button>
-                <button onclick="closeReceipt()" class="col-span-2 text-slate-400 mt-2">إغلاق</button>
+            
+            <div class="grid grid-cols-2 gap-2 mt-4">
+                <button onclick="shareReceiptImage()" class="bg-blue-600 text-white p-3 rounded-xl font-bold text-sm">📤 مشاركة الصورة</button>
+                <button onclick="shareReceiptText()" class="bg-green-600 text-white p-3 rounded-xl font-bold text-sm">💬 مشاركة نص</button>
+                <button onclick="downloadReceipt()" class="col-span-2 bg-slate-800 text-white p-3 rounded-xl text-sm font-bold">💾 حفظ في الجهاز</button>
+                <button onclick="el('receiptModal').classList.add('hidden')" class="col-span-2 text-slate-500 mt-2 text-xs">إغلاق النافذة</button>
             </div>
         </div>
     </div>
 
-    <div id="receipt-canvas-area"></div>
-
     <script>
-        const STORAGE_KEY = "NAS_PRO_V2";
+        const STORAGE_KEY = "NAS_PRO_V3";
         let clients = JSON.parse(localStorage.getItem(STORAGE_KEY)) || [];
-        let selectedDays = 0;
+        let selectedService = "";
         let selectedPaid = null;
-        let selectedDate = null;
         let editIndex = null;
 
         const el = (id) => document.getElementById(id);
 
         function showTab(tab) {
-            if(tab === 'add') {
-                el('viewAdd').classList.remove('hidden');
-                el('viewList').classList.add('hidden');
-                el('tabAdd').classList.add('tab-active');
-                el('tabList').classList.remove('tab-active');
-            } else {
-                el('viewAdd').classList.add('hidden');
-                el('viewList').classList.remove('hidden');
-                el('tabAdd').classList.remove('tab-active');
-                el('tabList').classList.add('tab-active');
-                render();
+            el('viewAdd').classList.toggle('hidden', tab !== 'add');
+            el('viewList').classList.toggle('hidden', tab !== 'list');
+            el('tabAdd').classList.toggle('tab-active', tab === 'add');
+            el('tabList').classList.toggle('tab-active', tab === 'list');
+            if(tab === 'list') render();
+        }
+
+        function setService(btn, val) {
+            document.querySelectorAll('#servicesGrid button').forEach(b => b.classList.remove('btn-active'));
+            btn.classList.add('btn-active');
+            selectedService = val;
+            toggleCustomService(false);
+        }
+
+        function toggleCustomService(show) {
+            el('customService').classList.toggle('hidden', !show);
+            if(show) {
+                document.querySelectorAll('#servicesGrid button').forEach(b => b.classList.remove('btn-active'));
+                el('otherBtn').classList.add('btn-active');
+                selectedService = "CUSTOM";
             }
         }
 
-        function setDays(btn, val) {
-            document.querySelectorAll('#daysContainer button').forEach(b => b.classList.remove('btn-active'));
-            btn.classList.add('btn-active');
-            selectedDays = val;
-            selectedDate = null;
-            el('customDate').value = "";
-        }
-
-        function setCustomDate(val) {
-            document.querySelectorAll('#daysContainer button').forEach(b => b.classList.remove('btn-active'));
-            selectedDate = val;
-            selectedDays = 0;
-        }
-
         function setPaid(status) {
-            el('btnPaid').classList.remove('btn-active');
-            el('btnUnpaid').classList.remove('btn-active');
-            if(status) el('btnPaid').classList.add('btn-active');
-            else el('btnUnpaid').classList.add('btn-active');
+            el('btnPaid').classList.toggle('btn-active', status);
+            el('btnUnpaid').classList.toggle('btn-active', !status);
             selectedPaid = status;
         }
 
         function saveClient() {
             const name = el('name').value.trim();
             const phone = el('phone').value.trim();
-            const service = el('service').value.trim();
             const insta = el('insta').value.trim().replace('@', '');
             const link = el('link').value.trim();
             const notes = el('notes').value.trim();
+            const expDate = el('expDate').value;
+            const finalService = selectedService === "CUSTOM" ? el('customService').value : selectedService;
 
-            if (!name || (selectedDays === 0 && !selectedDate) || selectedPaid === null) {
-                alert("⚠️ أكمل البيانات الأساسية (الاسم، المدة، حالة الدفع)");
+            if (!name || !finalService || !expDate || selectedPaid === null) {
+                alert("⚠️ يرجى ملء: الاسم، الخدمة، التاريخ، وحالة الدفع.");
                 return;
             }
 
-            let endDate;
-            if(selectedDate) {
-                endDate = new Date(selectedDate);
-            } else {
-                endDate = new Date();
-                endDate.setDate(endDate.getDate() + selectedDays);
-            }
-
-            const data = {
-                name, phone, service, insta, link, notes,
-                paid: selectedPaid,
-                end: endDate.toISOString()
-            };
+            const data = { name, phone, insta, link, notes, service: finalService, paid: selectedPaid, end: expDate };
 
             if (editIndex !== null) clients[editIndex] = data;
             else clients.unshift(data);
@@ -185,46 +168,52 @@
             localStorage.setItem(STORAGE_KEY, JSON.stringify(clients));
             clearForm();
             checkExpirations();
-            alert("✅ تم الحفظ");
             showTab('list');
         }
 
         function clearForm() {
-            el('name').value = el('phone').value = el('service').value = el('insta').value = el('link').value = el('notes').value = el('customDate').value = "";
-            selectedDays = 0; selectedPaid = null; selectedDate = null; editIndex = null;
+            el('name').value = el('phone').value = el('insta').value = el('link').value = el('notes').value = el('expDate').value = el('customService').value = "";
+            selectedService = ""; selectedPaid = null; editIndex = null;
             document.querySelectorAll('.btn-active').forEach(b => b.classList.remove('btn-active'));
-            el('mainBtn').textContent = "💾 حفظ الزبون";
+            el('mainBtn').textContent = "💾 حفظ البيانات";
+            toggleCustomService(false);
         }
 
         function render() {
             const q = el('search').value.toLowerCase();
             const list = el('clientsList');
             list.innerHTML = "";
-            const now = new Date();
+            const now = new Date().toISOString().split('T')[0];
 
             clients.forEach((c, i) => {
                 if (c.name.toLowerCase().includes(q) || c.phone.includes(q)) {
-                    const isExp = new Date(c.end) < now;
+                    const isExp = c.end < now;
+                    // تعديل رابط الانستغرام حسب طلبك
+                    const instaLink = `https://www.instagram.com/${c.insta}?igsh=YnF0bTU4MXAyamZ3`;
+                    
                     list.innerHTML += `
-                        <div class="glass-card p-5 rounded-2xl border-r-4 ${isExp ? 'border-red-600' : 'border-green-500'}">
+                        <div class="glass-card p-5 rounded-3xl border-l-4 ${isExp ? 'border-red-600' : 'border-blue-500'}">
                             <div class="flex justify-between items-start">
                                 <div>
-                                    <h3 class="font-bold text-lg">${c.name}</h3>
-                                    <p class="text-xs text-blue-400 font-bold">${c.service}</p>
+                                    <h3 class="font-black text-lg text-white">${c.name}</h3>
+                                    <span class="text-[10px] bg-blue-600/20 text-blue-400 px-2 py-1 rounded-md font-bold">${c.service}</span>
                                 </div>
-                                ${c.insta ? `<a href="https://instagram.com/${c.insta}" target="_blank" class="text-pink-500 text-xl">📸</a>` : ''}
+                                <div class="flex gap-3">
+                                    ${c.insta ? `<a href="${instaLink}" target="_blank" class="text-2xl">📸</a>` : ''}
+                                    ${c.link ? `<a href="${c.link}" target="_blank" class="text-2xl">🔗</a>` : ''}
+                                </div>
                             </div>
                             
-                            <div class="text-xs mt-3 opacity-70 space-y-1">
-                                <p>📅 ينتهي: ${new Date(c.end).toLocaleDateString('ar-EG')}</p>
-                                ${c.notes ? `<p class="italic text-yellow-500">📝 ${c.notes}</p>` : ''}
+                            <div class="text-xs mt-4 space-y-1 opacity-60">
+                                <p>⌛ الانتهاء: ${c.end}</p>
+                                ${c.notes ? `<p class="text-yellow-500">📝 ${c.notes}</p>` : ''}
                             </div>
 
-                            <div class="flex gap-2 mt-4">
-                                <button onclick="openReceipt(${i})" class="bg-blue-600/20 text-blue-400 p-2 px-3 rounded-lg text-xs">وصل 📄</button>
-                                <button onclick="editClient(${i})" class="bg-slate-700 p-2 px-3 rounded-lg text-xs">تعديل</button>
-                                <button onclick="deleteClient(${i})" class="bg-red-900/20 text-red-400 p-2 px-3 rounded-lg text-xs">حذف</button>
-                                <a href="https://wa.me/964${c.phone}" target="_blank" class="mr-auto bg-green-600 p-2 px-4 rounded-lg text-xs font-bold">واتساب</a>
+                            <div class="flex gap-2 mt-4 pt-4 border-t border-slate-700/50">
+                                <button onclick="openReceipt(${i})" class="bg-white text-black font-bold p-2 px-4 rounded-xl text-xs">وصل 📄</button>
+                                <button onclick="editClient(${i})" class="bg-slate-700 p-2 px-4 rounded-xl text-xs">تعديل</button>
+                                <button onclick="deleteClient(${i})" class="bg-red-900/30 text-red-400 p-2 px-4 rounded-xl text-xs">حذف</button>
+                                <a href="https://wa.me/964${c.phone}" target="_blank" class="mr-auto bg-green-600 p-2 px-4 rounded-xl text-xs font-bold">واتساب</a>
                             </div>
                         </div>
                     `;
@@ -233,65 +222,66 @@
         }
 
         function checkExpirations() {
-            const now = new Date();
-            const expired = clients.some(c => new Date(c.end) < now);
-            el('expiryAlert').classList.toggle('hidden', !expired);
+            const now = new Date().toISOString().split('T')[0];
+            const hasExp = clients.some(c => c.end < now);
+            el('expiryAlert').classList.toggle('hidden', !hasExp);
         }
 
-        // نظام الوصل
-        let currentReceiptClient = null;
+        let currentR = null;
         function openReceipt(i) {
-            currentReceiptClient = clients[i];
-            el('rName').textContent = currentReceiptClient.name;
-            el('rService').textContent = currentReceiptClient.service;
-            el('rEnd').textContent = new Date(currentReceiptClient.end).toLocaleDateString('ar-EG');
+            currentR = clients[i];
+            el('rName').textContent = currentR.name;
+            el('rService').textContent = currentR.service;
+            el('rEnd').textContent = currentR.end;
             el('receiptModal').classList.remove('hidden');
         }
 
-        function closeReceipt() { el('receiptModal').classList.add('hidden'); }
-
-        async function downloadReceipt() {
-            const area = el('printableReceipt');
-            const canvas = await html2canvas(area);
-            const link = document.createElement('a');
-            link.download = `Receipt-${currentReceiptClient.name}.png`;
-            link.href = canvas.toDataURL();
-            link.click();
+        async function shareReceiptImage() {
+            const canvas = await html2canvas(el('printableReceipt'));
+            canvas.toBlob(async (blob) => {
+                const file = new File([blob], 'receipt.png', { type: 'image/png' });
+                if (navigator.canShare && navigator.canShare({ files: [file] })) {
+                    try {
+                        await navigator.share({
+                            files: [file],
+                            title: 'وصل اشتراك',
+                            text: `وصل الزبون ${currentR.name}`
+                        });
+                    } catch (err) { console.error("Share failed", err); }
+                } else {
+                    alert("المتصفح لا يدعم مشاركة الصور مباشرة، يمكنك حفظ الصورة ثم إرسالها.");
+                }
+            });
         }
 
         function shareReceiptText() {
-            const text = `وصل اشتراك من NAS\nالزبون: ${currentReceiptClient.name}\nالخدمة: ${currentReceiptClient.service}\nينتهي بتاريخ: ${new Date(currentReceiptClient.end).toLocaleDateString('ar-EG')}\nشكراً لتعاملك معنا!`;
-            if (navigator.share) {
-                navigator.share({ title: 'وصل اشتراك', text: text });
-            } else {
-                navigator.clipboard.writeText(text);
-                alert("تم نسخ النص للحافظة");
-            }
+            const txt = `وصل اشتراك NAS\nالزبون: ${currentR.name}\nالخدمة: ${currentR.service}\nتاريخ الانتهاء: ${currentR.end}\nشكراً لتعاملك معنا!`;
+            navigator.share ? navigator.share({ text: txt }) : (navigator.clipboard.writeText(txt) & alert("تم نسخ النص"));
+        }
+
+        async function downloadReceipt() {
+            const canvas = await html2canvas(el('printableReceipt'));
+            const a = document.createElement('a');
+            a.download = `NAS-${currentR.name}.png`;
+            a.href = canvas.toDataURL();
+            a.click();
         }
 
         function editClient(i) {
             editIndex = i;
             const c = clients[i];
-            el('name').value = c.name;
-            el('phone').value = c.phone;
-            el('service').value = c.service;
-            el('insta').value = c.insta || "";
-            el('link').value = c.link || "";
-            el('notes').value = c.notes || "";
+            el('name').value = c.name; el('phone').value = c.phone;
+            el('insta').value = c.insta; el('link').value = c.link;
+            el('notes').value = c.notes; el('expDate').value = c.end;
             setPaid(c.paid);
             el('mainBtn').textContent = "🔄 تحديث البيانات";
             showTab('add');
         }
 
         function deleteClient(i) {
-            if(confirm("حذف الزبون نهائياً؟")) {
-                clients.splice(i, 1);
-                localStorage.setItem(STORAGE_KEY, JSON.stringify(clients));
-                render();
-            }
+            if(confirm("حذف الزبون؟")) { clients.splice(i, 1); localStorage.setItem(STORAGE_KEY, JSON.stringify(clients)); render(); }
         }
 
-        // التشغيل الأول
         checkExpirations();
     </script>
 </body>
