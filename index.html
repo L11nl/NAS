@@ -2,7 +2,7 @@
 <html lang="ar" dir="rtl">
 <head>
   <meta charset="UTF-8" />
-  <title>NAS | الإدارة المبسطة V8.5</title>
+  <title>NAS | الإدارة المبسطة V8.6</title>
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <meta name="theme-color" content="#0b1120" />
 
@@ -129,10 +129,31 @@
     .section-enter{ animation: fadeUp .22s ease-out; }
     @keyframes fadeUp{ from{transform:translateY(10px);opacity:0} to{transform:translateY(0);opacity:1} }
 
+    .btn-primary{
+      background: var(--blue);
+      color: #fff;
+    }
+    .btn-primary:hover{ filter: brightness(1.07); }
+
+    .btn-warn{
+      background: var(--orange);
+      color: #fff;
+    }
+    .btn-warn:hover{ filter: brightness(1.07); }
+
+    .btn-danger{
+      background: var(--red);
+      color: #fff;
+    }
+    .btn-danger:hover{ filter: brightness(1.07); }
+
     @media (prefers-reduced-motion: reduce){
       .section-enter,.tab-btn,.chip,.input-field,.icon-btn{animation:none!important;transition:none!important}
     }
   </style>
+
+  <!-- ✅ CSS مخصص من الإعدادات -->
+  <style id="customStyle"></style>
 </head>
 
 <body class="pb-24 font-cairo">
@@ -142,6 +163,7 @@
     <button data-sec="home" id="btn-home" class="tab-btn active flex-1 p-4 font-black text-xs text-center">🏠 الرئيسية</button>
     <button data-sec="add"  id="btn-add"  class="tab-btn flex-1 p-4 font-black text-xs text-center">➕ إضافة</button>
     <button data-sec="list" id="btn-list" class="tab-btn flex-1 p-4 font-black text-xs text-center">🔍 المشتركين</button>
+    <button data-sec="settings" id="btn-settings" class="tab-btn flex-1 p-4 font-black text-xs text-center">⚙️ الإعدادات</button>
   </nav>
 
   <main class="p-4 max-w-3xl mx-auto space-y-6">
@@ -151,8 +173,8 @@
       <div class="glass p-6 rounded-[2.75rem]">
         <div class="flex items-start justify-between gap-3">
           <div>
-            <h1 class="text-3xl font-black text-blue-400 leading-tight">NAS</h1>
-            <p class="text-xs text-slate-400 font-bold">V8.5 • مبسط</p>
+            <h1 id="appTitle" class="text-3xl font-black leading-tight" style="color: var(--blue)">NAS</h1>
+            <p id="appVersion" class="text-xs text-slate-400 font-bold">V8.6 • مبسط</p>
           </div>
           <div class="text-left">
             <p class="text-[10px] text-slate-400 font-black">اليوم</p>
@@ -203,7 +225,7 @@
       <!-- تذكيرات -->
       <div class="glass p-5 rounded-[2.75rem] space-y-3">
         <div class="flex items-center justify-between">
-          <h3 class="text-sm font-black text-orange-300">🔔 تذكيرات (اليوم/باچر)</h3>
+          <h3 class="text-sm font-black" style="color: var(--orange)">🔔 تذكيرات (اليوم/باچر)</h3>
           <button id="goListFromHome" class="text-xs font-black text-blue-300 hover:text-blue-200" data-haptic>عرض الكل →</button>
         </div>
         <div id="reminder-list" class="space-y-3"></div>
@@ -214,7 +236,7 @@
     <section id="sec-add" class="hidden space-y-4 section-enter">
       <div class="glass p-6 rounded-[2.75rem] space-y-4">
         <div class="flex items-center justify-between">
-          <h2 class="text-lg font-black text-blue-400">➕ إضافة / تعديل</h2>
+          <h2 class="text-lg font-black" style="color: var(--blue)">➕ إضافة / تعديل</h2>
           <button id="resetFormBtn" class="text-xs font-black text-slate-300 hover:text-white" data-haptic>تفريغ</button>
         </div>
 
@@ -250,6 +272,9 @@
             <button id="durYear" class="chip" data-haptic>🌟 سنوي</button>
           </div>
           <input type="date" id="expDate" class="input-field">
+          <p class="text-[10px] text-slate-400 font-bold">
+            ✅ تم إصلاح مشكلة "شهري" (لم يعد يضيف شهر فوق شهر + يعتمد شهر تقويم حتى لا يقفز إلى الشهر الثالث).
+          </p>
         </div>
 
         <div class="grid grid-cols-2 gap-2">
@@ -265,7 +290,7 @@
           </label>
         </div>
 
-        <button id="mainBtn" class="w-full bg-blue-600 hover:bg-blue-500 p-4 rounded-2xl font-black shadow-lg" data-haptic>
+        <button id="mainBtn" class="btn-primary w-full p-4 rounded-2xl font-black shadow-lg" data-haptic>
           💾 حفظ
         </button>
       </div>
@@ -275,13 +300,13 @@
     <section id="sec-list" class="hidden space-y-4 section-enter">
       <div class="glass p-5 rounded-[2.75rem] space-y-4">
         <div class="flex items-center justify-between">
-          <h2 class="text-lg font-black text-blue-400">🔍 المشتركين</h2>
+          <h2 class="text-lg font-black" style="color: var(--blue)">🔍 المشتركين</h2>
           <p class="text-[10px] text-slate-500 font-black">نتائج: <span id="listCount">0</span></p>
         </div>
 
         <input id="search" class="input-field" placeholder="بحث: الاسم / الرقم / الخدمة / الانستا ...">
 
-        <!-- ✅ إضافة “خانة” سنوي/شهري (تبويبات سريعة) -->
+        <!-- ✅ تبويبات سريعة -->
         <div id="typeTabs" class="grid grid-cols-3 gap-2">
           <button id="tabAll"  class="chip active" data-type-tab="الكل" data-haptic>✨ الكل</button>
           <button id="tabMon"  class="chip" data-type-tab="شهري" data-haptic>📅 شهري</button>
@@ -289,7 +314,6 @@
         </div>
 
         <div class="grid grid-cols-2 gap-2">
-          <!-- تبقى كما هي -->
           <select id="typeFilter" class="input-field">
             <option value="الكل">النوع: الكل</option>
             <option value="شهري">النوع: شهري</option>
@@ -316,6 +340,148 @@
       <div id="main-list" class="space-y-3"></div>
     </section>
 
+    <!-- SETTINGS -->
+    <section id="sec-settings" class="hidden space-y-4 section-enter">
+      <div class="glass p-6 rounded-[2.75rem] space-y-5">
+
+        <div class="flex items-center justify-between">
+          <h2 class="text-lg font-black" style="color: var(--blue)">⚙️ إعدادات الموقع</h2>
+          <button id="resetSettingsBtn" class="text-xs font-black text-slate-300 hover:text-white" data-haptic>إرجاع الافتراضي</button>
+        </div>
+
+        <!-- Theme -->
+        <div class="mini space-y-3">
+          <p class="text-xs font-black text-slate-200">🎨 السمة (الألوان)</p>
+
+          <div class="grid grid-cols-2 gap-2">
+            <div>
+              <p class="text-[10px] text-slate-400 font-black mb-1">الخلفية</p>
+              <input id="set-bg" type="color" class="input-field !p-2 !h-12">
+            </div>
+            <div>
+              <p class="text-[10px] text-slate-400 font-black mb-1">النص</p>
+              <input id="set-text" type="color" class="input-field !p-2 !h-12">
+            </div>
+
+            <div>
+              <p class="text-[10px] text-slate-400 font-black mb-1">اللون الأساسي</p>
+              <input id="set-blue" type="color" class="input-field !p-2 !h-12">
+            </div>
+            <div>
+              <p class="text-[10px] text-slate-400 font-black mb-1">لون التحذير</p>
+              <input id="set-orange" type="color" class="input-field !p-2 !h-12">
+            </div>
+
+            <div>
+              <p class="text-[10px] text-slate-400 font-black mb-1">لون النجاح</p>
+              <input id="set-green" type="color" class="input-field !p-2 !h-12">
+            </div>
+            <div>
+              <p class="text-[10px] text-slate-400 font-black mb-1">لون الخطر</p>
+              <input id="set-red" type="color" class="input-field !p-2 !h-12">
+            </div>
+          </div>
+
+          <div class="grid grid-cols-1 gap-2">
+            <div>
+              <p class="text-[10px] text-slate-400 font-black mb-1">لون اللوحات (panel) - يدعم rgba</p>
+              <input id="set-panel" class="input-field" placeholder="مثال: rgba(30, 41, 59, 0.68)">
+            </div>
+            <div>
+              <p class="text-[10px] text-slate-400 font-black mb-1">لون الحدود (border) - يدعم rgba</p>
+              <input id="set-border" class="input-field" placeholder="مثال: rgba(255,255,255,0.10)">
+            </div>
+            <div>
+              <p class="text-[10px] text-slate-400 font-black mb-1">لون النص الثانوي (muted)</p>
+              <input id="set-muted" type="color" class="input-field !p-2 !h-12">
+            </div>
+            <div>
+              <p class="text-[10px] text-slate-400 font-black mb-1">خلفية الوصل (receipt)</p>
+              <input id="set-receipt" type="color" class="input-field !p-2 !h-12">
+            </div>
+          </div>
+        </div>
+
+        <!-- Branding -->
+        <div class="mini space-y-3">
+          <p class="text-xs font-black text-slate-200">🏷️ هوية الموقع</p>
+          <div class="grid grid-cols-2 gap-2">
+            <input id="set-appName" class="input-field" placeholder="اسم التطبيق">
+            <input id="set-versionLabel" class="input-field" placeholder="سطر الإصدار (مثال: V8.6 • مبسط)">
+          </div>
+
+          <div class="grid grid-cols-2 gap-2">
+            <input id="set-igHandle" class="input-field" placeholder="يوزر الانستغرام (بدون @)">
+            <input id="set-igUrl" class="input-field" placeholder="رابط الانستغرام للـ QR">
+          </div>
+
+          <p class="text-[10px] text-slate-400 font-bold">
+            ملاحظة: اليوزر يُستخدم للعرض فقط، والرابط يُستخدم للـ QR.
+          </p>
+        </div>
+
+        <!-- Defaults -->
+        <div class="mini space-y-3">
+          <p class="text-xs font-black text-slate-200">⚙️ افتراضيات النظام</p>
+
+          <div class="grid grid-cols-2 gap-2">
+            <select id="set-durationDefault" class="input-field">
+              <option value="شهري">افتراضي المدة: شهري</option>
+              <option value="سنوي">افتراضي المدة: سنوي</option>
+            </select>
+
+            <div class="mini flex items-center justify-between gap-3">
+              <span class="text-xs font-black text-slate-200">فتح الوصل بعد الحفظ</span>
+              <input id="set-openReceiptDefault" type="checkbox" class="accent-blue-500">
+            </div>
+          </div>
+
+          <div class="grid grid-cols-2 gap-2">
+            <select id="set-monthlyMode" class="input-field">
+              <option value="month">الشهر = شهر تقويم (مفضل)</option>
+              <option value="30days">الشهر = 30 يوم</option>
+            </select>
+
+            <select id="set-yearlyMode" class="input-field">
+              <option value="year">السنة = سنة تقويم (مفضل)</option>
+              <option value="365days">السنة = 365 يوم</option>
+            </select>
+          </div>
+
+          <p class="text-[10px] text-slate-400 font-bold">
+            ✅ "شهر تقويم" يحل مشكلة القفز إلى الشهر الثالث عند نهايات الأشهر.
+          </p>
+        </div>
+
+        <!-- Custom CSS -->
+        <div class="mini space-y-3">
+          <p class="text-xs font-black text-slate-200">🧩 CSS مخصص (اختياري)</p>
+          <textarea id="set-customCSS" class="input-field" rows="6" placeholder="اكتب CSS هنا لتعديل أي شيء بالواجهة..."></textarea>
+          <p class="text-[10px] text-slate-400 font-bold">يُطبق بعد الضغط على (تطبيق) أو (حفظ).</p>
+        </div>
+
+        <div class="grid grid-cols-2 gap-2">
+          <button id="saveSettingsBtn" class="btn-primary w-full p-4 rounded-2xl font-black shadow-lg" data-haptic>💾 حفظ الإعدادات</button>
+          <button id="applySettingsBtn" class="chip w-full !py-4" data-haptic>👁️ تطبيق بدون حفظ</button>
+        </div>
+
+        <!-- Backup -->
+        <div class="mini space-y-3">
+          <p class="text-xs font-black text-slate-200">💾 نسخة احتياطية (اختياري)</p>
+          <textarea id="backupBox" class="input-field" rows="6" placeholder="اضغط (تصدير) أو الصق النسخة هنا للاستيراد"></textarea>
+          <div class="grid grid-cols-3 gap-2">
+            <button id="exportBackupBtn" class="chip !py-3" data-haptic>تصدير</button>
+            <button id="importBackupBtn" class="chip !py-3" data-haptic>استيراد</button>
+            <button id="clearAllBtn" class="chip !py-3 border-red-500/40" data-haptic>مسح الكل</button>
+          </div>
+          <p class="text-[10px] text-slate-500 font-bold">
+            مسح الكل يحذف البيانات من هذا الجهاز فقط (localStorage).
+          </p>
+        </div>
+
+      </div>
+    </section>
+
   </main>
 
   <!-- Receipt Modal -->
@@ -325,7 +491,7 @@
            style="background: var(--receipt);">
         <div class="absolute top-0 right-0 w-24 h-24 bg-blue-50 rounded-full -mr-12 -mt-12 opacity-70"></div>
 
-        <h3 class="text-4xl font-black text-blue-600 italic text-center mb-1">NAS</h3>
+        <h3 id="receiptBrand" class="text-4xl font-black text-blue-600 italic text-center mb-1">NAS</h3>
         <p class="text-center text-[10px] font-black opacity-60 mb-4">وصل اشتراك</p>
 
         <div class="space-y-3 border-y border-slate-200/70 py-5 font-bold text-sm">
@@ -346,20 +512,20 @@
                  style="width:92px;height:92px;border-radius:16px;overflow:hidden;background:#fff;border:1px solid rgba(15,23,42,.10);"></div>
 
             <p id="qrFallback" class="text-[9px] font-black text-slate-600 mt-2 hidden">QR غير متاح</p>
-            <p class="text-[9px] font-black text-slate-600 mt-1">@l11nl</p>
+            <p id="receiptIG" class="text-[9px] font-black text-slate-600 mt-1">@l11nl</p>
           </div>
 
           <div class="flex items-center justify-center gap-2 opacity-70">
             <svg width="18" height="18" viewBox="0 0 24 24" aria-hidden="true">
               <path fill="#111827" d="M7 2h10a5 5 0 0 1 5 5v10a5 5 0 0 1-5 5H7a5 5 0 0 1-5-5V7a5 5 0 0 1 5-5zm10 2H7a3 3 0 0 0-3 3v10a3 3 0 0 0 3 3h10a3 3 0 0 0 3-3V7a3 3 0 0 0-3-3zm-5 4a5 5 0 1 1 0 10a5 5 0 0 1 0-10zm0 2a3 3 0 1 0 0 6a3 3 0 0 0 0-6zm5.25-2.1a1.1 1.1 0 1 1 0 2.2a1.1 1.1 0 0 1 0-2.2z"/>
             </svg>
-            <span class="text-[11px] font-black tracking-wide">L11NL</span>
+            <span id="receiptIGHandle" class="text-[11px] font-black tracking-wide">L11NL</span>
           </div>
         </div>
       </div>
 
       <div class="grid grid-cols-1 gap-2 mt-4">
-        <button id="shareReceiptBtn" class="bg-blue-600 text-white p-3 rounded-xl font-black" data-haptic>📤 مشاركة كصورة</button>
+        <button id="shareReceiptBtn" class="btn-primary text-white p-3 rounded-xl font-black" data-haptic>📤 مشاركة كصورة</button>
         <button id="closeReceiptBtn" class="text-slate-300 text-xs py-2 font-black" data-haptic>إغلاق</button>
       </div>
     </div>
@@ -369,7 +535,7 @@
   <div id="renewModal" class="fixed inset-0 bg-black/90 hidden z-[70] flex items-center justify-center p-4">
     <div class="w-full max-w-md glass p-6 rounded-[2.75rem] space-y-4">
       <div class="flex items-center justify-between">
-        <h3 class="text-lg font-black text-orange-300">⚡ تجديد</h3>
+        <h3 class="text-lg font-black" style="color: var(--orange)">⚡ تجديد</h3>
         <button id="closeRenewBtn" class="text-slate-300 font-black text-sm" data-haptic>✕</button>
       </div>
 
@@ -380,8 +546,8 @@
       </div>
 
       <div class="grid grid-cols-2 gap-2">
-        <button id="renewMon" class="chip active" data-haptic>📅 30 يوم</button>
-        <button id="renewYear" class="chip" data-haptic>🌟 365 يوم</button>
+        <button id="renewMon" class="chip active" data-haptic>📅 شهري</button>
+        <button id="renewYear" class="chip" data-haptic>🌟 سنوي</button>
       </div>
 
       <div class="grid grid-cols-2 gap-2">
@@ -394,7 +560,7 @@
         <button id="renewDebtBtn" class="chip border-red-500/60" data-haptic>❌ غير مدفوع</button>
       </div>
 
-      <button id="confirmRenewBtn" class="w-full bg-orange-600 hover:bg-orange-500 p-4 rounded-2xl font-black shadow-lg" data-haptic>
+      <button id="confirmRenewBtn" class="btn-warn w-full p-4 rounded-2xl font-black shadow-lg" data-haptic>
         ✅ تثبيت
       </button>
     </div>
@@ -420,7 +586,7 @@
           <button id="sheetTrashOrRestore" class="chip border-red-500/40" data-haptic>🗑️ حذف</button>
         </div>
 
-        <button id="sheetDeleteForever" class="hidden w-full bg-red-600/90 hover:bg-red-600 text-white p-3 rounded-2xl font-black" data-haptic>
+        <button id="sheetDeleteForever" class="hidden btn-danger w-full text-white p-3 rounded-2xl font-black" data-haptic>
           حذف نهائي
         </button>
 
@@ -436,17 +602,45 @@
 
 <script>
 /* =========================
-   NAS V8.5 Lite
-   - Fix stats
-   - Add yearly tab
-   - Show paid/unpaid + type on each card
+   NAS V8.6
+   ✅ إصلاح "شهري":
+   - صار يعتمد شهر تقويم (addMonths) بدل 30 يوم
+   - الضغط المتكرر على "شهري" لا يراكم (يبقى ثابت)
+   ✅ إضافة صفحة إعدادات (ثيم + افتراضيات + CSS + نسخ احتياطي)
    ========================= */
 
   const DB = "NAS_STABLE_V5_DATA";
   const LEDGER_KEY = "NAS_LEDGER_V1";
   const CONTACT_KEY = "NAS_CONTACTED";
+  const SETTINGS_KEY = "NAS_SETTINGS_V1";
 
-  const OUR_IG_QR_URL = "https://www.instagram.com/l11nl?igsh=YnF0bTU4MXAyamZ3";
+  const DEFAULT_SETTINGS = Object.freeze({
+    theme: {
+      bg: "#0b1120",
+      panel: "rgba(30, 41, 59, 0.68)",
+      border: "rgba(255,255,255,0.10)",
+      text: "#e2e8f0",
+      muted: "#94a3b8",
+      blue: "#3b82f6",
+      green: "#22c55e",
+      red: "#ef4444",
+      orange: "#f59e0b",
+      receipt: "#f6f7fb",
+    },
+    branding: {
+      appName: "NAS",
+      versionLabel: "V8.6 • مبسط",
+      instagramHandle: "l11nl",
+      instagramUrl: "https://www.instagram.com/l11nl?igsh=YnF0bTU4MXAyamZ3",
+    },
+    defaults: {
+      durationType: "شهري",
+      monthlyMode: "month",   // month | 30days
+      yearlyMode: "year",     // year  | 365days
+      openReceiptAfterSave: true,
+    },
+    customCSS: ""
+  });
 
   const $ = (id) => document.getElementById(id);
 
@@ -455,13 +649,17 @@
     ledger: [],
     contacted: { date: "", keys: [] },
 
+    settings: null,
+
     sec: "home",
     editId: null,
     currentPaid: true,
     currentType: "شهري",
+    expAnchorISO: null,
 
     renewId: null,
-    renewDays: 30,
+    renewType: "شهري",
+    renewAnchorISO: null,
     renewPaid: true,
 
     sheetId: null,
@@ -490,6 +688,150 @@
     localStorage.setItem(key, JSON.stringify(value));
   }
 
+  function safeHex(v, fallback){
+    const s = (v ?? "").toString().trim();
+    return /^#([0-9a-fA-F]{6})$/.test(s) ? s : fallback;
+  }
+
+  function deepMerge(base, extra){
+    if (Array.isArray(base)){
+      return Array.isArray(extra) ? extra.slice() : base.slice();
+    }
+    if (typeof base !== "object" || base === null){
+      return (extra === undefined) ? base : extra;
+    }
+    const out = { ...base };
+    if (typeof extra !== "object" || extra === null) return out;
+    for (const k of Object.keys(extra)){
+      const bv = base[k];
+      const ev = extra[k];
+      out[k] = deepMerge(bv, ev);
+    }
+    return out;
+  }
+
+  function loadSettings(){
+    const raw = loadJSON(SETTINGS_KEY, null);
+    if (!raw || typeof raw !== "object"){
+      return JSON.parse(JSON.stringify(DEFAULT_SETTINGS));
+    }
+    const merged = deepMerge(DEFAULT_SETTINGS, raw);
+    // ضمان مفاتيح أساسية
+    merged.theme = merged.theme || JSON.parse(JSON.stringify(DEFAULT_SETTINGS.theme));
+    merged.branding = merged.branding || JSON.parse(JSON.stringify(DEFAULT_SETTINGS.branding));
+    merged.defaults = merged.defaults || JSON.parse(JSON.stringify(DEFAULT_SETTINGS.defaults));
+    merged.customCSS = (merged.customCSS ?? "").toString();
+    return merged;
+  }
+
+  function applySettings(){
+    const s = state.settings || DEFAULT_SETTINGS;
+    const t = s.theme || DEFAULT_SETTINGS.theme;
+
+    // CSS vars
+    document.documentElement.style.setProperty("--bg", safeHex(t.bg, DEFAULT_SETTINGS.theme.bg));
+    document.documentElement.style.setProperty("--text", safeHex(t.text, DEFAULT_SETTINGS.theme.text));
+    document.documentElement.style.setProperty("--muted", safeHex(t.muted, DEFAULT_SETTINGS.theme.muted));
+    document.documentElement.style.setProperty("--blue", safeHex(t.blue, DEFAULT_SETTINGS.theme.blue));
+    document.documentElement.style.setProperty("--green", safeHex(t.green, DEFAULT_SETTINGS.theme.green));
+    document.documentElement.style.setProperty("--red", safeHex(t.red, DEFAULT_SETTINGS.theme.red));
+    document.documentElement.style.setProperty("--orange", safeHex(t.orange, DEFAULT_SETTINGS.theme.orange));
+    document.documentElement.style.setProperty("--receipt", safeHex(t.receipt, DEFAULT_SETTINGS.theme.receipt));
+
+    document.documentElement.style.setProperty("--panel", (t.panel || DEFAULT_SETTINGS.theme.panel));
+    document.documentElement.style.setProperty("--border", (t.border || DEFAULT_SETTINGS.theme.border));
+
+    // meta theme-color
+    const meta = document.querySelector('meta[name="theme-color"]');
+    if (meta) meta.setAttribute("content", safeHex(t.bg, DEFAULT_SETTINGS.theme.bg));
+
+    // Branding
+    const appName = (s.branding?.appName || DEFAULT_SETTINGS.branding.appName).toString().trim() || "NAS";
+    const versionLabel = (s.branding?.versionLabel || DEFAULT_SETTINGS.branding.versionLabel).toString().trim();
+    const igHandle = (s.branding?.instagramHandle || DEFAULT_SETTINGS.branding.instagramHandle).toString().trim().replace(/^@/,"");
+    const igShown = igHandle ? ("@" + igHandle) : "@";
+
+    if ($("appTitle")) $("appTitle").innerText = appName;
+    if ($("appVersion")) $("appVersion").innerText = versionLabel || DEFAULT_SETTINGS.branding.versionLabel;
+    if ($("receiptBrand")) $("receiptBrand").innerText = appName;
+
+    if ($("receiptIG")) $("receiptIG").innerText = igShown;
+    if ($("receiptIGHandle")) $("receiptIGHandle").innerText = (igHandle || "-").toUpperCase();
+
+    // Custom CSS
+    const cssNode = $("customStyle");
+    if (cssNode) cssNode.textContent = (s.customCSS || "").toString();
+
+    // title
+    document.title = `${appName} | الإدارة المبسطة`;
+  }
+
+  function fillSettingsForm(){
+    if (!$("set-bg")) return;
+    const s = state.settings || DEFAULT_SETTINGS;
+    const t = s.theme || DEFAULT_SETTINGS.theme;
+
+    $("set-bg").value = safeHex(t.bg, DEFAULT_SETTINGS.theme.bg);
+    $("set-text").value = safeHex(t.text, DEFAULT_SETTINGS.theme.text);
+    $("set-muted").value = safeHex(t.muted, DEFAULT_SETTINGS.theme.muted);
+    $("set-blue").value = safeHex(t.blue, DEFAULT_SETTINGS.theme.blue);
+    $("set-green").value = safeHex(t.green, DEFAULT_SETTINGS.theme.green);
+    $("set-red").value = safeHex(t.red, DEFAULT_SETTINGS.theme.red);
+    $("set-orange").value = safeHex(t.orange, DEFAULT_SETTINGS.theme.orange);
+    $("set-receipt").value = safeHex(t.receipt, DEFAULT_SETTINGS.theme.receipt);
+
+    $("set-panel").value = (t.panel || DEFAULT_SETTINGS.theme.panel);
+    $("set-border").value = (t.border || DEFAULT_SETTINGS.theme.border);
+
+    $("set-appName").value = (s.branding?.appName || DEFAULT_SETTINGS.branding.appName);
+    $("set-versionLabel").value = (s.branding?.versionLabel || DEFAULT_SETTINGS.branding.versionLabel);
+    $("set-igHandle").value = (s.branding?.instagramHandle || DEFAULT_SETTINGS.branding.instagramHandle).toString().replace(/^@/,"");
+    $("set-igUrl").value = (s.branding?.instagramUrl || DEFAULT_SETTINGS.branding.instagramUrl);
+
+    $("set-durationDefault").value = (s.defaults?.durationType || DEFAULT_SETTINGS.defaults.durationType);
+    $("set-monthlyMode").value = (s.defaults?.monthlyMode || DEFAULT_SETTINGS.defaults.monthlyMode);
+    $("set-yearlyMode").value = (s.defaults?.yearlyMode || DEFAULT_SETTINGS.defaults.yearlyMode);
+    $("set-openReceiptDefault").checked = !!(s.defaults?.openReceiptAfterSave);
+
+    $("set-customCSS").value = (s.customCSS || "");
+  }
+
+  function readSettingsForm(){
+    const cur = state.settings || DEFAULT_SETTINGS;
+    const out = JSON.parse(JSON.stringify(cur));
+
+    out.theme = out.theme || {};
+    out.branding = out.branding || {};
+    out.defaults = out.defaults || {};
+
+    out.theme.bg = safeHex($("set-bg").value, DEFAULT_SETTINGS.theme.bg);
+    out.theme.text = safeHex($("set-text").value, DEFAULT_SETTINGS.theme.text);
+    out.theme.muted = safeHex($("set-muted").value, DEFAULT_SETTINGS.theme.muted);
+    out.theme.blue = safeHex($("set-blue").value, DEFAULT_SETTINGS.theme.blue);
+    out.theme.green = safeHex($("set-green").value, DEFAULT_SETTINGS.theme.green);
+    out.theme.red = safeHex($("set-red").value, DEFAULT_SETTINGS.theme.red);
+    out.theme.orange = safeHex($("set-orange").value, DEFAULT_SETTINGS.theme.orange);
+    out.theme.receipt = safeHex($("set-receipt").value, DEFAULT_SETTINGS.theme.receipt);
+
+    out.theme.panel = ($("set-panel").value || "").trim() || DEFAULT_SETTINGS.theme.panel;
+    out.theme.border = ($("set-border").value || "").trim() || DEFAULT_SETTINGS.theme.border;
+
+    out.branding.appName = ($("set-appName").value || "").trim() || DEFAULT_SETTINGS.branding.appName;
+    out.branding.versionLabel = ($("set-versionLabel").value || "").trim() || DEFAULT_SETTINGS.branding.versionLabel;
+
+    out.branding.instagramHandle = ($("set-igHandle").value || "").trim().replace(/^@/,"") || DEFAULT_SETTINGS.branding.instagramHandle;
+    out.branding.instagramUrl = ($("set-igUrl").value || "").trim() || DEFAULT_SETTINGS.branding.instagramUrl;
+
+    out.defaults.durationType = ($("set-durationDefault").value || DEFAULT_SETTINGS.defaults.durationType);
+    out.defaults.monthlyMode = ($("set-monthlyMode").value || DEFAULT_SETTINGS.defaults.monthlyMode);
+    out.defaults.yearlyMode = ($("set-yearlyMode").value || DEFAULT_SETTINGS.defaults.yearlyMode);
+    out.defaults.openReceiptAfterSave = !!$("set-openReceiptDefault").checked;
+
+    out.customCSS = ($("set-customCSS").value || "").toString();
+
+    return out;
+  }
+
   function isoDateLocal(d = new Date()){
     const x = new Date(d.getTime() - d.getTimezoneOffset() * 60000);
     return x.toISOString().split("T")[0];
@@ -516,6 +858,32 @@
     const base = parseISODate(baseIso) || new Date();
     base.setDate(base.getDate() + Number(days||0));
     return isoDateLocal(base);
+  }
+
+  // ✅ شهر تقويم (يحافظ على اليوم قدر الإمكان ويقص للـ آخر يوم إذا الشهر قصير)
+  function addMonthsToISO(baseIso, months){
+    const base = parseISODate(baseIso) || new Date();
+    const day = base.getDate();
+    const d = new Date(base.getFullYear(), base.getMonth(), 1);
+    d.setMonth(d.getMonth() + Number(months||0));
+    const maxDay = new Date(d.getFullYear(), d.getMonth()+1, 0).getDate();
+    d.setDate(Math.min(day, maxDay));
+    return isoDateLocal(d);
+  }
+
+  function addYearsToISO(baseIso, years){
+    return addMonthsToISO(baseIso, Number(years||0) * 12);
+  }
+
+  // ✅ يحسب تاريخ الانتهاء حسب إعداداتك (شهر تقويم أو 30 يوم)
+  function calcEndFrom(baseIso, type){
+    const base = baseIso || isoDateLocal(new Date());
+    if (type === "سنوي"){
+      const mode = state.settings?.defaults?.yearlyMode || DEFAULT_SETTINGS.defaults.yearlyMode;
+      return mode === "365days" ? addDaysToISO(base, 365) : addYearsToISO(base, 1);
+    }
+    const mode = state.settings?.defaults?.monthlyMode || DEFAULT_SETTINGS.defaults.monthlyMode;
+    return mode === "30days" ? addDaysToISO(base, 30) : addMonthsToISO(base, 1);
   }
 
   function formatMoney(n){ return (Number(n||0)).toLocaleString("en-US"); }
@@ -648,25 +1016,22 @@
   }
 
   function showSection(sec){
-    ["home","add","list"].forEach(s=>{
+    ["home","add","list","settings"].forEach(s=>{
       $("sec-"+s).classList.add("hidden");
       $("btn-"+s).classList.remove("active");
     });
     $("sec-"+sec).classList.remove("hidden");
     $("btn-"+sec).classList.add("active");
+
     const box = $("sec-"+sec);
     box.classList.remove("section-enter"); void box.offsetWidth; box.classList.add("section-enter");
     state.sec = sec;
 
     if (sec==="home") updateHome();
     if (sec==="list") renderList();
+    if (sec==="settings") fillSettingsForm();
   }
 
-  /* =========================
-     ✅ FIX: الإحصائيات تقرأ من المشتركين (وليس من ledger)
-     - اليوم = حسب created اليوم
-     - الشهر = حسب created هذا الشهر
-     ========================= */
   function computeStats(){
     const now = new Date();
     const todayStr = isoDateLocal(now);
@@ -801,12 +1166,20 @@
     $("p-false").classList.toggle("active", !state.currentPaid);
   }
 
-  function setDuration(days, type){
+  // ✅ إصلاح جذري: لا نستخدم expDate كقاعدة حتى لا يتراكم عند الضغط المتكرر
+  function setDuration(type, opts={}){
+    const force = !!opts.force;
+    const same = (type === state.currentType);
+
     state.currentType = type;
     $("durMon").classList.toggle("active", type==="شهري");
     $("durYear").classList.toggle("active", type==="سنوي");
-    const base = $("expDate").value || isoDateLocal(new Date());
-    $("expDate").value = addDaysToISO(base, days);
+
+    // إذا ضغط على نفس الخيار مرة ثانية: لا تغيّر التاريخ (يبقى ثابت)
+    if (!force && same) return;
+
+    const anchor = state.expAnchorISO || isoDateLocal(new Date());
+    $("expDate").value = calcEndFrom(anchor, type);
   }
 
   function clearForm(){
@@ -818,8 +1191,15 @@
     $("service-select").value = "Canva Pro";
     $("service-custom").value = "";
     syncCustomServiceUI();
+
     setPaidState(true);
-    setDuration(30,"شهري");
+
+    // anchor = اليوم (قاعدة الحساب)
+    state.expAnchorISO = isoDateLocal(new Date());
+
+    const defType = state.settings?.defaults?.durationType || "شهري";
+    setDuration(defType, {force:true});
+
     $("mainBtn").innerText = "💾 حفظ";
   }
 
@@ -922,6 +1302,9 @@
     $("durMon").classList.toggle("active", state.currentType==="شهري");
     $("durYear").classList.toggle("active", state.currentType==="سنوي");
 
+    // anchor للتبديل (إذا بدّل شهري/سنوي) يكون من اليوم
+    state.expAnchorISO = isoDateLocal(new Date());
+
     setPaidState(!!c.paid);
 
     $("mainBtn").innerText = "🔄 حفظ التعديل";
@@ -970,7 +1353,6 @@
 
   function endValue(c){ return c.end ? c.end : "9999-12-31"; }
 
-  /* ✅ جديد: مزامنة التبويبات السريعة مع select */
   function syncTypeTabs(){
     const v = $("typeFilter").value;
     $("tabAll").classList.toggle("active", v === "الكل");
@@ -1055,7 +1437,6 @@
               <p class="text-[10px] text-blue-300 font-black truncate">${esc(c.service)} • ${formatMoney(c.price)} د.ع</p>
               <p class="text-[10px] text-slate-400 font-bold mt-1">ينتهي: ${esc(c.end||"-")}</p>
 
-              <!-- ✅ جديد: مدفوع/غير + شهري/سنوي + الحالة -->
               <div class="flex flex-wrap gap-2 mt-2">
                 <span class="badge ${paidClass}">${paidText}</span>
                 <span class="badge ${typeClass}">${typeText}</span>
@@ -1134,6 +1515,8 @@
     qrBox.innerHTML = "";
     fallback.classList.add("hidden");
 
+    const qrUrl = (state.settings?.branding?.instagramUrl || DEFAULT_SETTINGS.branding.instagramUrl).toString().trim();
+
     let tries = 0;
     function tryMake(){
       tries++;
@@ -1141,7 +1524,7 @@
       try{
         if (typeof QRCode === "undefined") throw new Error("QRCode lib missing");
         new QRCode(qrBox, {
-          text: OUR_IG_QR_URL,
+          text: qrUrl,
           width: 92,
           height: 92,
           correctLevel: QRCode.CorrectLevel.M
@@ -1205,27 +1588,48 @@
     }
   }
 
+  function updateRenewHeader(){
+    const c = state.clients.find(x=>x.id===state.renewId);
+    if (!c) return;
+    $("renewService").innerText = `${c.service||"-"} • (التجديد: ${state.renewType})`;
+  }
+
+  function setRenewDuration(type, opts={}){
+    const force = !!opts.force;
+    const same = (type === state.renewType);
+
+    state.renewType = type;
+    $("renewMon").classList.toggle("active", type==="شهري");
+    $("renewYear").classList.toggle("active", type==="سنوي");
+
+    if (!force && same) return;
+
+    const anchor = state.renewAnchorISO || isoDateLocal(new Date());
+    $("renewEnd").value = calcEndFrom(anchor, type);
+    updateRenewHeader();
+  }
+
   function openRenewModal(id){
     const c = state.clients.find(x=>x.id===id);
     if (!c) return;
 
     state.renewId = id;
     $("renewName").innerText = c.name || "-";
-    $("renewService").innerText = `${c.service||"-"} • (${c.type||"شهري"})`;
 
-    state.renewDays = (c.type==="سنوي") ? 365 : 30;
-    $("renewMon").classList.toggle("active", state.renewDays===30);
-    $("renewYear").classList.toggle("active", state.renewDays===365);
+    const today = isoDateLocal(new Date());
+    // قاعدة التجديد: إذا الاشتراك بعده فعّال نجدد من تاريخ الانتهاء، إذا منتهي نجدد من اليوم
+    state.renewAnchorISO = (c.end && c.end >= today) ? c.end : today;
 
+    // افتراضي التجديد حسب نوع المشترك
+    const type = (c.type === "سنوي") ? "سنوي" : "شهري";
+    setRenewDuration(type, {force:true});
+
+    // افتراضي حالة الدفع
     state.renewPaid = true;
     $("renewPaidBtn").classList.add("active");
     $("renewDebtBtn").classList.remove("active");
 
     $("renewPrice").value = Number(c.price)||0;
-
-    const today = isoDateLocal(new Date());
-    const base = (c.end && c.end >= today) ? c.end : today;
-    $("renewEnd").value = addDaysToISO(base, state.renewDays);
 
     $("renewModal").classList.remove("hidden");
     vibrate(10);
@@ -1257,6 +1661,102 @@
     renderList(); updateHome();
   }
 
+  // ===== Settings helpers =====
+  function applySettingsFromUI(persist){
+    state.settings = readSettingsForm();
+    applySettings();
+
+    // تحديث افتراضي فتح الوصل
+    $("openReceiptAfterSave").checked = !!(state.settings?.defaults?.openReceiptAfterSave);
+
+    if (persist){
+      saveJSON(SETTINGS_KEY, state.settings);
+      toast("تم حفظ الإعدادات ✅", "ok");
+    } else {
+      toast("تم تطبيق الإعدادات بدون حفظ ✅", "ok");
+    }
+  }
+
+  function resetSettings(){
+    state.settings = JSON.parse(JSON.stringify(DEFAULT_SETTINGS));
+    saveJSON(SETTINGS_KEY, state.settings);
+    applySettings();
+    fillSettingsForm();
+    $("openReceiptAfterSave").checked = !!(state.settings.defaults.openReceiptAfterSave);
+    toast("تمت إعادة الإعدادات للوضع الافتراضي ✅", "ok");
+  }
+
+  function exportBackup(){
+    const backup = {
+      app: "NAS",
+      schema: 1,
+      exportedAt: new Date().toISOString(),
+      settings: state.settings,
+      clients: state.clients,
+      ledger: state.ledger,
+      contacted: state.contacted,
+    };
+    const txt = JSON.stringify(backup, null, 2);
+    $("backupBox").value = txt;
+
+    if (navigator.clipboard && navigator.clipboard.writeText){
+      navigator.clipboard.writeText(txt)
+        .then(()=>toast("تم تصدير ونسخ النسخة ✅", "ok"))
+        .catch(()=>toast("تم التصدير، انسخها يدويًا.", "warn"));
+    } else {
+      toast("تم التصدير، انسخها يدويًا.", "warn");
+    }
+  }
+
+  function importBackup(){
+    const txt = ($("backupBox").value || "").trim();
+    if (!txt){
+      toast("الصق النسخة الاحتياطية أولاً.", "warn");
+      return;
+    }
+    let obj = null;
+    try{ obj = JSON.parse(txt); }catch(e){
+      toast("JSON غير صالح.", "err");
+      return;
+    }
+    if (!obj || typeof obj !== "object"){
+      toast("نسخة غير صالحة.", "err");
+      return;
+    }
+
+    // settings
+    if (obj.settings && typeof obj.settings === "object"){
+      state.settings = deepMerge(DEFAULT_SETTINGS, obj.settings);
+      saveJSON(SETTINGS_KEY, state.settings);
+      applySettings();
+      fillSettingsForm();
+      $("openReceiptAfterSave").checked = !!(state.settings.defaults.openReceiptAfterSave);
+    }
+
+    // data
+    if (Array.isArray(obj.clients)) saveJSON(DB, obj.clients);
+    if (Array.isArray(obj.ledger)) saveJSON(LEDGER_KEY, obj.ledger);
+    if (obj.contacted && typeof obj.contacted === "object") saveJSON(CONTACT_KEY, obj.contacted);
+
+    // إعادة تحميل للهيكلة
+    migrateClients();
+    migrateLedger();
+    state.contacted = loadContactStore();
+
+    toast("تم الاستيراد ✅", "ok");
+    renderList(); updateHome();
+  }
+
+  function clearAllData(){
+    if (!confirm("⚠️ مسح كل البيانات (المشتركين + الحسابات + الإعدادات) من هذا الجهاز؟")) return;
+    localStorage.removeItem(DB);
+    localStorage.removeItem(LEDGER_KEY);
+    localStorage.removeItem(CONTACT_KEY);
+    localStorage.removeItem(SETTINGS_KEY);
+    toast("تم مسح الكل ✅ (سيعاد تحميل الصفحة)", "warn");
+    setTimeout(()=>location.reload(), 600);
+  }
+
   function bindEvents(){
     $("topNav").addEventListener("click", (e)=>{
       const b = e.target.closest("[data-sec]");
@@ -1269,8 +1769,9 @@
 
     $("service-select").addEventListener("change", ()=> { syncCustomServiceUI(); vibrate(6); });
 
-    $("durMon").addEventListener("click", ()=> setDuration(30,"شهري"));
-    $("durYear").addEventListener("click", ()=> setDuration(365,"سنوي"));
+    // ✅ شهري/سنوي (ثابت + شهر تقويم)
+    $("durMon").addEventListener("click", ()=> setDuration("شهري"));
+    $("durYear").addEventListener("click", ()=> setDuration("سنوي"));
 
     $("p-true").addEventListener("click", ()=> setPaidState(true));
     $("p-false").addEventListener("click", ()=> setPaidState(false));
@@ -1279,12 +1780,10 @@
     $("mainBtn").addEventListener("click", saveData);
 
     $("search").addEventListener("input", renderList);
-
     $("typeFilter").addEventListener("change", ()=>{ renderList(); vibrate(6); });
     $("statusFilter").addEventListener("change", ()=>{ renderList(); vibrate(6); });
     $("sortMode").addEventListener("change", ()=>{ renderList(); vibrate(6); });
 
-    /* ✅ جديد: تبويبات شهري/سنوي/الكل */
     $("typeTabs").addEventListener("click", (e)=>{
       const btn = e.target.closest("[data-type-tab]");
       if (!btn) return;
@@ -1335,29 +1834,9 @@
     $("closeRenewBtn").addEventListener("click", ()=> { $("renewModal").classList.add("hidden"); vibrate(8); });
     $("renewModal").addEventListener("click", (e)=> { if (e.target === $("renewModal")) { $("renewModal").classList.add("hidden"); vibrate(8); } });
 
-    $("renewMon").addEventListener("click", ()=>{
-      state.renewDays = 30;
-      $("renewMon").classList.add("active");
-      $("renewYear").classList.remove("active");
-      const c = state.clients.find(x=>x.id===state.renewId);
-      if (!c) return;
-      const today = isoDateLocal(new Date());
-      const base = (c.end && c.end >= today) ? c.end : today;
-      $("renewEnd").value = addDaysToISO(base, 30);
-      vibrate(8);
-    });
-
-    $("renewYear").addEventListener("click", ()=>{
-      state.renewDays = 365;
-      $("renewYear").classList.add("active");
-      $("renewMon").classList.remove("active");
-      const c = state.clients.find(x=>x.id===state.renewId);
-      if (!c) return;
-      const today = isoDateLocal(new Date());
-      const base = (c.end && c.end >= today) ? c.end : today;
-      $("renewEnd").value = addDaysToISO(base, 365);
-      vibrate(8);
-    });
+    // ✅ تجديد شهري/سنوي (ثابت + يعتمد شهر تقويم حسب الإعدادات)
+    $("renewMon").addEventListener("click", ()=>{ setRenewDuration("شهري"); vibrate(8); });
+    $("renewYear").addEventListener("click", ()=>{ setRenewDuration("سنوي"); vibrate(8); });
 
     $("renewPaidBtn").addEventListener("click", ()=>{
       state.renewPaid = true;
@@ -1404,6 +1883,15 @@
       if (node) node.remove();
     });
 
+    // ✅ Settings events
+    $("saveSettingsBtn").addEventListener("click", ()=>{ applySettingsFromUI(true); vibrate(10); });
+    $("applySettingsBtn").addEventListener("click", ()=>{ applySettingsFromUI(false); vibrate(10); });
+    $("resetSettingsBtn").addEventListener("click", ()=>{ resetSettings(); vibrate(10); });
+
+    $("exportBackupBtn").addEventListener("click", ()=>{ exportBackup(); vibrate(10); });
+    $("importBackupBtn").addEventListener("click", ()=>{ importBackup(); vibrate(10); });
+    $("clearAllBtn").addEventListener("click", ()=>{ clearAllData(); vibrate(12); });
+
     document.addEventListener("click", (e)=>{
       if (e.target.closest("[data-haptic]")) vibrate(8);
     }, { capture: true });
@@ -1418,14 +1906,20 @@
   }
 
   function init(){
+    // settings
+    state.settings = loadSettings();
+    applySettings();
+
+    // data
     migrateClients();
     migrateLedger();
     state.contacted = loadContactStore();
 
-    $("expDate").value = addDaysToISO(isoDateLocal(new Date()), 30);
-    syncCustomServiceUI();
-    setPaidState(true);
-    setDuration(30,"شهري");
+    // defaults
+    $("openReceiptAfterSave").checked = !!(state.settings?.defaults?.openReceiptAfterSave);
+
+    // form
+    clearForm();
 
     bindEvents();
     updateHome();
