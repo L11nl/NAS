@@ -1,288 +1,1936 @@
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
-    <meta charset="UTF-8">
-    <title>NAS | الإدارة الاحترافية V8.0</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;900&display=swap" rel="stylesheet">
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
-    <style>
-        body { font-family: 'Cairo', sans-serif; background-color: #0b1120; color: #e2e8f0; }
-        .glass { background: rgba(30, 41, 59, 0.7); backdrop-filter: blur(12px); border: 1px solid rgba(255,255,255,0.1); }
-        .tab-btn { transition: 0.3s; border-bottom: 3px solid transparent; opacity: 0.6; }
-        .tab-btn.active { opacity: 1; border-color: #3b82f6; color: #3b82f6; }
-        .stat-box { background: linear-gradient(145deg, #1e293b, #0f172a); border: 1px solid #334155; }
-        .input-field { background: #1e293b; border: 1px solid #334155; color: white; border-radius: 12px; padding: 12px; }
-        .btn-action { transition: transform 0.1s; }
-        .btn-action:active { transform: scale(0.95); }
-    </style>
+  <meta charset="UTF-8" />
+  <title>NAS | الإدارة الاحترافية V8.2</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="theme-color" content="#0b1120" />
+
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: { cairo: ["Cairo", "sans-serif"] }
+        }
+      }
+    };
+  </script>
+
+  <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;900&display=swap" rel="stylesheet">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+  <!-- QR داخل الوصل -->
+  <script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"></script>
+
+  <style>
+    :root{
+      --bg:#0b1120;
+      --panel:rgba(30, 41, 59, 0.68);
+      --border:rgba(255,255,255,0.10);
+      --muted:#94a3b8;
+      --text:#e2e8f0;
+      --blue:#3b82f6;
+      --green:#22c55e;
+      --red:#ef4444;
+      --orange:#f59e0b;
+    }
+
+    html, body { height: 100%; }
+    body {
+      font-family: 'Cairo', sans-serif;
+      background: radial-gradient(1200px 600px at 70% -10%, rgba(59,130,246,.20), transparent 60%),
+                  radial-gradient(900px 500px at 10% 10%, rgba(245,158,11,.12), transparent 55%),
+                  var(--bg);
+      color: var(--text);
+      overflow-x: hidden;
+    }
+
+    /* Glass */
+    .glass{
+      background: var(--panel);
+      backdrop-filter: blur(14px);
+      -webkit-backdrop-filter: blur(14px);
+      border: 1px solid var(--border);
+      box-shadow: 0 18px 40px rgba(0,0,0,.35);
+    }
+
+    /* Tabs */
+    .tab-btn{
+      transition: .25s ease;
+      border-bottom: 3px solid transparent;
+      opacity: .55;
+    }
+    .tab-btn.active{
+      opacity: 1;
+      border-color: var(--blue);
+      color: var(--blue);
+    }
+
+    /* Inputs */
+    .input-field{
+      background: rgba(30, 41, 59, 0.85);
+      border: 1px solid rgba(148,163,184,0.25);
+      color: white;
+      border-radius: 16px;
+      padding: 12px 14px;
+      width: 100%;
+      outline: none;
+      transition: .2s ease;
+    }
+    .input-field:focus{
+      border-color: rgba(59,130,246,.7);
+      box-shadow: 0 0 0 4px rgba(59,130,246,.12);
+    }
+
+    /* Cards */
+    .stat-card{
+      background: rgba(15,23,42,.65);
+      border: 1px solid rgba(148,163,184,0.18);
+      border-radius: 22px;
+      padding: 14px;
+    }
+
+    /* Chips */
+    .chip{
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      padding: 10px 12px;
+      border-radius: 16px;
+      background: rgba(30,41,59,.8);
+      border: 1px solid rgba(148,163,184,.22);
+      font-weight: 800;
+      font-size: 11px;
+      transition: .2s ease;
+      user-select: none;
+      cursor: pointer;
+    }
+    .chip.active{
+      border-color: rgba(59,130,246,.9);
+      box-shadow: 0 0 0 4px rgba(59,130,246,.12);
+    }
+
+    /* Section animation */
+    .section-enter{
+      animation: fadeUp .22s ease-out;
+    }
+    @keyframes fadeUp{
+      from{ transform: translateY(10px); opacity: 0; }
+      to{ transform: translateY(0); opacity: 1; }
+    }
+
+    /* Scrollbar */
+    ::-webkit-scrollbar{ width: 10px; }
+    ::-webkit-scrollbar-thumb{ background: rgba(148,163,184,.22); border-radius: 14px; }
+    ::-webkit-scrollbar-track{ background: rgba(15,23,42,.45); }
+
+    @media (prefers-reduced-motion: reduce){
+      .section-enter, .tab-btn, .chip, .input-field { animation: none !important; transition: none !important; }
+    }
+  </style>
 </head>
-<body class="pb-20">
 
-    <nav class="flex bg-slate-900 border-b border-slate-800 sticky top-0 z-50 shadow-2xl">
-        <button onclick="showSection('home')" id="btn-home" class="tab-btn active flex-1 p-4 font-bold text-xs">🏠 الرئيسية</button>
-        <button onclick="showSection('add')" id="btn-add" class="tab-btn flex-1 p-4 font-bold text-xs">➕ إضافة</button>
-        <button onclick="showSection('list')" id="btn-list" class="tab-btn flex-1 p-4 font-bold text-xs">🔍 المشتركين</button>
-    </nav>
+<body class="pb-28 font-cairo">
 
-    <div class="p-4 max-w-2xl mx-auto">
-        
-        <div id="sec-home" class="space-y-6">
-            <h2 class="text-xl font-black text-blue-400">📊 ملخص الأداء</h2>
-            <div class="grid grid-cols-3 gap-2">
-                <div class="stat-box p-3 rounded-2xl text-center">
-                    <p class="text-[9px] text-slate-400 mb-1">اليوم</p>
-                    <p id="stat-day" class="text-sm font-black text-green-400">0</p>
-                </div>
-                <div class="stat-box p-3 rounded-2xl text-center">
-                    <p class="text-[9px] text-slate-400 mb-1">الأسبوع</p>
-                    <p id="stat-week" class="text-sm font-black text-blue-400">0</p>
-                </div>
-                <div class="stat-box p-3 rounded-2xl text-center">
-                    <p class="text-[9px] text-slate-400 mb-1">الشهر</p>
-                    <p id="stat-month" class="text-sm font-black text-purple-400">0</p>
-                </div>
-            </div>
+  <!-- Top Nav -->
+  <nav id="topNav" class="flex bg-slate-900/80 border-b border-slate-800 sticky top-0 z-50 shadow-2xl backdrop-blur-xl">
+    <button data-sec="home" id="btn-home" class="tab-btn active flex-1 p-4 font-black text-xs text-center">🏠 الرئيسية</button>
+    <button data-sec="add" id="btn-add" class="tab-btn flex-1 p-4 font-black text-xs text-center">➕ إضافة</button>
+    <button data-sec="list" id="btn-list" class="tab-btn flex-1 p-4 font-black text-xs text-center">🔍 المشتركين</button>
+    <button data-sec="tools" id="btn-tools" class="tab-btn flex-1 p-4 font-black text-xs text-center">🧰 أدوات</button>
+  </nav>
 
-            <div class="glass p-4 rounded-3xl">
-                <h3 class="text-sm font-bold mb-4 flex items-center gap-2">
-                    🔔 تذكيرات تنتهي باچر 
-                    <span id="remind-count" class="bg-red-500 text-[10px] px-2 rounded-full">0</span>
-                </h3>
-                <div id="reminder-list" class="space-y-3">
-                    </div>
-            </div>
+  <main class="p-4 max-w-3xl mx-auto space-y-6">
+
+    <!-- HOME -->
+    <section id="sec-home" class="space-y-6 section-enter">
+      <div class="glass p-6 rounded-[2.75rem]">
+        <div class="flex items-start justify-between gap-3 mb-5">
+          <div>
+            <h1 class="text-3xl font-black text-blue-400 leading-tight">NAS</h1>
+            <p class="text-xs text-slate-400 font-bold">لوحة الإدارة الاحترافية • V8.2</p>
+          </div>
+          <div class="text-left">
+            <p class="text-[10px] text-slate-400 font-black">التاريخ</p>
+            <p id="todayLabel" class="text-sm font-black"></p>
+          </div>
         </div>
 
-        <div id="sec-add" class="hidden space-y-4">
-            <div class="glass p-6 rounded-[2.5rem] space-y-4 shadow-2xl">
-                <input id="name" class="input-field w-full" placeholder="اسم الزبون">
-                <div class="grid grid-cols-2 gap-2">
-                    <input id="price" type="number" class="input-field" placeholder="السعر">
-                    <input id="phone" type="tel" class="input-field" placeholder="رقم الهاتف">
-                </div>
-                <div class="grid grid-cols-2 gap-2">
-                    <select id="service-select" class="input-field">
-                        <option value="Canva Pro">Canva Pro</option>
-                        <option value="ChatGPT">ChatGPT</option>
-                        <option value="CapCut">CapCut</option>
-                        <option value="CUSTOM">خدمة أخرى</option>
-                    </select>
-                    <input id="insta" class="input-field" placeholder="يوزر انستا">
-                </div>
-                <div class="grid grid-cols-3 gap-2">
-                    <button onclick="setDuration(30, 'شهري')" class="bg-slate-800 p-2 rounded-xl text-xs">شهر</button>
-                    <button onclick="setDuration(365, 'سنوي')" class="bg-slate-800 p-2 rounded-xl text-xs">سنة</button>
-                    <input type="date" id="expDate" class="input-field p-1 text-[10px]">
-                </div>
-                <div class="flex gap-2">
-                    <button onclick="setPaidState(true)" id="p-true" class="flex-1 bg-green-600/20 p-3 rounded-xl border border-green-600 text-xs">مدفوع</button>
-                    <button onclick="setPaidState(false)" id="p-false" class="flex-1 bg-red-600/20 p-3 rounded-xl border border-red-600 text-xs">دين</button>
-                </div>
-                <button onclick="saveData()" id="mainBtn" class="w-full bg-blue-600 p-4 rounded-2xl font-black">💾 حفظ البيانات</button>
+        <div class="grid grid-cols-2 gap-3">
+          <div class="stat-card">
+            <p class="text-[10px] text-slate-400 font-black mb-2">✅ مشتركين فعّالين</p>
+            <p class="text-2xl font-black text-green-400" id="k-active">0</p>
+            <p class="text-[10px] text-slate-500 font-bold mt-1">غير مؤرشف + غير منتهي</p>
+          </div>
+          <div class="stat-card">
+            <p class="text-[10px] text-slate-400 font-black mb-2">⏳ ينتهي خلال 7 أيام</p>
+            <p class="text-2xl font-black text-orange-400" id="k-due7">0</p>
+            <p class="text-[10px] text-slate-500 font-bold mt-1">تنبيه مبكر للتجديد</p>
+          </div>
+          <div class="stat-card">
+            <p class="text-[10px] text-slate-400 font-black mb-2">⚠️ منتهية</p>
+            <p class="text-2xl font-black text-red-400" id="k-expired">0</p>
+            <p class="text-[10px] text-slate-500 font-bold mt-1">تحتاج متابعة</p>
+          </div>
+          <div class="stat-card">
+            <p class="text-[10px] text-slate-400 font-black mb-2">🔴 مجموع الديون</p>
+            <p class="text-2xl font-black text-red-300" id="k-totalDebt">0</p>
+            <p class="text-[10px] text-slate-500 font-bold mt-1">حسب دفتر العمليات</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="space-y-3">
+        <h2 class="text-lg font-black text-blue-400">📊 التقارير المالية (دفتر العمليات)</h2>
+
+        <div class="grid grid-cols-1 gap-3">
+          <div class="stat-card">
+            <p class="text-[10px] text-slate-400 mb-2 font-black">إحصائيات اليوم</p>
+            <div class="flex justify-between">
+              <span class="text-green-400 text-xs font-black">🟢 كاش: <b id="d-paid">0</b></span>
+              <span class="text-red-400 text-xs font-black">🔴 ديون: <b id="d-debt">0</b></span>
             </div>
+          </div>
+
+          <div class="stat-card">
+            <p class="text-[10px] text-slate-400 mb-2 font-black">إحصائيات الأسبوع</p>
+            <div class="flex justify-between">
+              <span class="text-green-400 text-xs font-black">🟢 كاش: <b id="w-paid">0</b></span>
+              <span class="text-red-400 text-xs font-black">🔴 ديون: <b id="w-debt">0</b></span>
+            </div>
+          </div>
+
+          <div class="stat-card border-b-2 border-blue-500">
+            <p class="text-[10px] text-slate-400 mb-2 font-black">إحصائيات الشهر الحالي</p>
+            <div class="flex justify-between">
+              <span class="text-green-400 text-sm font-black">🟢 كاش: <b id="m-paid">0</b></span>
+              <span class="text-red-400 text-sm font-black">🔴 ديون: <b id="m-debt">0</b></span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="glass p-5 rounded-[2.75rem] space-y-3">
+        <div class="flex items-center justify-between">
+          <h3 class="text-sm font-black text-orange-400">🔔 التجديدات القريبة (اليوم/باچر/قريباً)</h3>
+          <button data-go="list" class="text-xs font-black text-blue-300 hover:text-blue-200">عرض المشتركين →</button>
+        </div>
+        <div id="reminder-list" class="space-y-3"></div>
+      </div>
+
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+        <div class="glass p-5 rounded-[2.5rem] space-y-3">
+          <div class="flex items-center justify-between">
+            <h3 class="text-sm font-black text-emerald-300">🏆 أفضل الخدمات</h3>
+            <span class="text-[10px] text-slate-500 font-black">حسب دفتر العمليات</span>
+          </div>
+          <div id="top-services" class="space-y-2"></div>
         </div>
 
-        <div id="sec-list" class="hidden space-y-4">
-            <input id="search" oninput="renderList()" class="input-field w-full" placeholder="🔍 بحث بالاسم...">
-            <div class="flex gap-2">
-                <button onclick="setListFilter('شهري')" id="f-mon" class="flex-1 bg-slate-800 p-2 rounded-xl text-xs border border-slate-700">📅 شهري</button>
-                <button onclick="setListFilter('سنوي')" id="f-year" class="flex-1 bg-slate-800 p-2 rounded-xl text-xs border border-slate-700">🌟 سنوي</button>
-            </div>
-            <div id="main-list" class="space-y-3"></div>
+        <div class="glass p-5 rounded-[2.5rem] space-y-3">
+          <div class="flex items-center justify-between">
+            <h3 class="text-sm font-black text-blue-300">📈 إيرادات آخر 6 أشهر</h3>
+            <span class="text-[10px] text-slate-500 font-black">كاش فقط</span>
+          </div>
+          <div id="month-chart" class="space-y-2"></div>
         </div>
+      </div>
+    </section>
+
+    <!-- ADD -->
+    <section id="sec-add" class="hidden space-y-4 section-enter">
+      <div class="glass p-6 rounded-[2.75rem] space-y-4">
+        <div class="flex items-center justify-between">
+          <h2 class="text-lg font-black text-blue-400">➕ إضافة / تحديث مشترك</h2>
+          <button id="resetFormBtn" class="text-xs font-black text-slate-300 hover:text-white">تفريغ الحقول</button>
+        </div>
+
+        <input id="name" class="input-field" placeholder="اسم الزبون الكامل *">
+
+        <div class="grid grid-cols-2 gap-2">
+          <input id="phone" type="tel" class="input-field" placeholder="رقم الهاتف (مثال: 77XXXXXXXX)">
+          <input id="price" type="number" class="input-field" placeholder="السعر (د.ع)">
+        </div>
+
+        <div class="grid grid-cols-2 gap-2">
+          <select id="service-select" class="input-field">
+            <option value="Canva Pro">Canva Pro</option>
+            <option value="ChatGPT">ChatGPT</option>
+            <option value="CapCut">CapCut</option>
+            <option value="YouTube Premium">YouTube Premium</option>
+            <option value="Netflix">Netflix</option>
+            <option value="Spotify">Spotify</option>
+            <option value="Office 365">Office 365</option>
+            <option value="CUSTOM">أخرى +</option>
+          </select>
+          <input id="insta" class="input-field" placeholder="يوزر انستغرام (اختياري)">
+        </div>
+
+        <div id="customServiceWrap" class="hidden">
+          <input id="service-custom" class="input-field" placeholder="اكتب اسم الخدمة (مثال: VPN / Adobe / ...)" />
+          <p class="text-[10px] text-slate-500 font-bold mt-2">راح تُحفظ باسم الخدمة اللي تكتبها هنا.</p>
+        </div>
+
+        <div class="glass p-4 rounded-3xl space-y-3 border border-slate-700/50">
+          <p class="text-xs font-black text-slate-200">⏱️ مدة الاشتراك + تاريخ الانتهاء *</p>
+          <div id="durBtns" class="grid grid-cols-2 gap-2">
+            <button class="chip active" data-days="30" data-type="شهري">📅 شهري (30 يوم)</button>
+            <button class="chip" data-days="365" data-type="سنوي">🌟 سنوي (365 يوم)</button>
+          </div>
+          <input type="date" id="expDate" class="input-field">
+          <p class="text-[10px] text-slate-500 font-bold">نصيحة: إذا تريد تاريخ مخصص، غيّره يدويًا من حقل التاريخ.</p>
+        </div>
+
+        <div class="grid grid-cols-2 gap-2">
+          <button id="p-true" class="chip active border-green-500/60">✅ مدفوع</button>
+          <button id="p-false" class="chip border-red-500/60">❌ دين</button>
+        </div>
+
+        <textarea id="notes" class="input-field" rows="3" placeholder="ملاحظات داخلية (اختياري): مثال: زبون دائم / خصم / ..."></textarea>
+
+        <div class="grid grid-cols-2 gap-2">
+          <button id="mainBtn" class="w-full bg-blue-600 hover:bg-blue-500 p-4 rounded-2xl font-black shadow-lg">💾 حفظ البيانات</button>
+          <button id="saveAndReceiptBtn" class="w-full bg-white text-slate-900 hover:bg-slate-100 p-4 rounded-2xl font-black shadow-lg">📄 حفظ + وصل</button>
+        </div>
+
+        <p class="text-[10px] text-slate-500 font-bold">
+          ✅ ملاحظة مهمة: بيانات المشتركين القدامى محفوظة لأننا لم نغيّر مفتاح التخزين (DB Key).
+        </p>
+      </div>
+    </section>
+
+    <!-- LIST -->
+    <section id="sec-list" class="hidden space-y-4 section-enter">
+      <div class="glass p-5 rounded-[2.75rem] space-y-4">
+        <div class="flex items-center justify-between">
+          <h2 class="text-lg font-black text-blue-400">🔍 إدارة المشتركين</h2>
+          <p class="text-[10px] text-slate-500 font-black">نتائج: <span id="listCount">0</span></p>
+        </div>
+
+        <input id="search" class="input-field" placeholder="🔍 بحث: الاسم / الرقم / الخدمة / الانستا ...">
+
+        <div class="space-y-2">
+          <p class="text-[10px] text-slate-400 font-black">فلترة النوع</p>
+          <div id="typeFilters" class="flex flex-wrap gap-2">
+            <button class="chip active" data-typefilter="شهري">📅 شهري</button>
+            <button class="chip" data-typefilter="سنوي">🌟 سنوي</button>
+            <button class="chip" data-typefilter="الكل">✨ الكل</button>
+          </div>
+        </div>
+
+        <div class="space-y-2">
+          <p class="text-[10px] text-slate-400 font-black">فلترة الحالة</p>
+          <div id="statusFilters" class="flex flex-wrap gap-2">
+            <button class="chip active" data-status="all">الكل</button>
+            <button class="chip" data-status="paid">✅ مدفوع</button>
+            <button class="chip" data-status="debt">❌ دين</button>
+            <button class="chip" data-status="due7">⏳ ينتهي قريبًا</button>
+            <button class="chip" data-status="expired">⚠️ منتهي</button>
+            <button class="chip" data-status="archived">🗃️ مؤرشف</button>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-2 gap-2">
+          <select id="sortMode" class="input-field">
+            <option value="endAsc">الأقرب انتهاءً</option>
+            <option value="endDesc">الأبعد انتهاءً</option>
+            <option value="recent">الأحدث إضافة/تجديد</option>
+            <option value="name">الاسم (أبجدي)</option>
+          </select>
+          <button id="quickHomeBtn" class="chip">🏠 رجوع للرئيسية</button>
+        </div>
+      </div>
+
+      <div id="main-list" class="space-y-3"></div>
+    </section>
+
+    <!-- TOOLS -->
+    <section id="sec-tools" class="hidden space-y-4 section-enter">
+      <div class="glass p-6 rounded-[2.75rem] space-y-4">
+        <h2 class="text-lg font-black text-blue-400">🧰 أدوات قوية (نسخ احتياطي + استيراد + أرشيف)</h2>
+
+        <div class="grid grid-cols-2 gap-2">
+          <button id="exportBtn" class="chip">⬇️ تصدير نسخة JSON</button>
+          <button id="exportCsvBtn" class="chip">📄 تصدير CSV (العمليات)</button>
+        </div>
+
+        <div class="glass p-4 rounded-3xl border border-slate-700/50 space-y-3">
+          <p class="text-xs font-black text-slate-200">⬆️ استيراد نسخة JSON (دمج بدون حذف)</p>
+          <input id="importFile" type="file" accept=".json,application/json" class="input-field">
+          <p class="text-[10px] text-slate-500 font-bold">
+            الاستيراد هنا “يضيف” بدون ما يمسح. إذا نفس الـ id موجود راح يتجاوز حتى ما يكرر.
+          </p>
+        </div>
+
+        <div class="grid grid-cols-2 gap-2">
+          <button id="resetContactBtn" class="chip">🔔 تصفير سجل التذكير (اليوم)</button>
+          <button id="runRepairBtn" class="chip">🛠️ إصلاح/ترحيل البيانات</button>
+        </div>
+
+        <div class="glass p-5 rounded-[2.5rem] space-y-3 border border-slate-700/50">
+          <div class="flex items-center justify-between">
+            <p class="text-sm font-black text-slate-200">🗃️ الأرشيف</p>
+            <p class="text-[10px] text-slate-500 font-black">عدد: <span id="archivedCount">0</span></p>
+          </div>
+          <div id="archive-list" class="space-y-3"></div>
+        </div>
+
+        <p class="text-[10px] text-slate-500 font-bold">
+          ✅ سياسة النسخة: ماكو “حذف نهائي” بالمشتركين في القائمة الطبيعية. كل شيء يروح أرشيف.
+        </p>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- Floating Add Button -->
+  <button id="fabAdd"
+          class="fixed bottom-6 right-6 w-14 h-14 rounded-2xl bg-blue-600 shadow-2xl font-black text-2xl z-50 hover:bg-blue-500 active:scale-95 transition"
+          title="إضافة">
+    +
+  </button>
+
+  <!-- Receipt Modal -->
+  <div id="receiptModal" class="fixed inset-0 bg-black/95 hidden z-[60] flex items-center justify-center p-4">
+    <div class="w-full max-w-sm">
+      <div id="printableReceipt" class="bg-white p-6 rounded-[2.5rem] text-slate-900 shadow-2xl text-right relative overflow-hidden">
+        <div class="absolute top-0 right-0 w-24 h-24 bg-blue-50 rounded-full -mr-12 -mt-12"></div>
+        <h3 class="text-4xl font-black text-blue-600 italic text-center mb-2">NAS</h3>
+        <p class="text-center text-[10px] font-black opacity-50 mb-4">وصل اشتراك / Subscription Receipt</p>
+
+        <div class="space-y-3 border-y border-slate-100 py-5 font-bold text-sm">
+          <div class="flex justify-between"><span>الزبون:</span> <span id="rName"></span></div>
+          <div class="flex justify-between"><span>الخدمة:</span> <span id="rService"></span></div>
+          <div class="flex justify-between"><span>السعر:</span> <span id="rPrice"></span></div>
+          <div class="flex justify-between"><span>الحالة:</span> <span id="rPaid"></span></div>
+          <div class="flex justify-between"><span>ينتهي في:</span> <span id="rEnd" class="text-red-500"></span></div>
+          <div class="flex justify-between"><span>التاريخ:</span> <span id="rAt" class="text-slate-700"></span></div>
+        </div>
+
+        <div class="mt-4 flex items-center justify-between gap-3">
+          <div>
+            <p class="text-[10px] font-black opacity-60">QR للتحقق</p>
+            <div id="qrBox" class="mt-2"></div>
+          </div>
+          <div class="text-left">
+            <p class="text-[10px] font-black opacity-40">L11NL</p>
+            <p class="text-[10px] font-black opacity-40">NAS • V8.2</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="grid grid-cols-1 gap-2 mt-4">
+        <button id="shareReceiptBtn" class="bg-blue-600 text-white p-3 rounded-xl font-black">📤 مشاركة كصورة</button>
+        <button id="closeReceiptBtn" class="text-slate-400 text-xs py-2 font-black">إغلاق</button>
+      </div>
     </div>
+  </div>
 
-    <div id="receiptModal" class="fixed inset-0 bg-black/95 hidden z-[60] flex items-center justify-center p-4">
-        <div class="w-full max-w-xs">
-            <div id="printableReceipt" class="bg-white p-6 rounded-[2.5rem] text-slate-900 shadow-2xl text-right">
-                <h3 class="text-4xl font-black text-blue-600 italic text-center">NAS</h3>
-                <div class="my-6 space-y-2 font-bold text-sm border-y border-slate-100 py-4">
-                    <div class="flex justify-between"><span>الزبون:</span> <span id="rName"></span></div>
-                    <div class="flex justify-between"><span>الخدمة:</span> <span id="rService"></span></div>
-                    <div class="flex justify-between"><span>السعر:</span> <span id="rPrice"></span></div>
-                    <div class="flex justify-between"><span>ينتهي:</span> <span id="rEnd"></span></div>
-                </div>
-                <p class="text-center text-[10px] font-black opacity-50">L11NL</p>
-            </div>
-            <button onclick="shareImage()" class="w-full bg-blue-600 mt-4 p-3 rounded-xl font-bold">📤 مشاركة صورة</button>
-            <button onclick="el('receiptModal').classList.add('hidden')" class="w-full text-slate-400 mt-2 text-xs">إغلاق</button>
-        </div>
+  <!-- Renew Modal -->
+  <div id="renewModal" class="fixed inset-0 bg-black/95 hidden z-[70] flex items-center justify-center p-4">
+    <div class="w-full max-w-md glass p-6 rounded-[2.75rem] space-y-4">
+      <div class="flex items-center justify-between">
+        <h3 class="text-lg font-black text-orange-300">⚡ تجديد الاشتراك</h3>
+        <button id="closeRenewBtn" class="text-slate-300 font-black text-sm">✕</button>
+      </div>
+
+      <div class="stat-card">
+        <p class="text-[10px] text-slate-400 font-black mb-2">المشترك</p>
+        <p class="text-sm font-black" id="renewName">-</p>
+        <p class="text-[10px] text-blue-300 font-black mt-1" id="renewService">-</p>
+      </div>
+
+      <div class="grid grid-cols-2 gap-2">
+        <button id="renewMon" class="chip active" data-rdays="30">📅 تجديد شهري</button>
+        <button id="renewYear" class="chip" data-rdays="365">🌟 تجديد سنوي</button>
+      </div>
+
+      <div class="grid grid-cols-2 gap-2">
+        <input id="renewPrice" type="number" class="input-field" placeholder="السعر (د.ع)">
+        <input id="renewEnd" type="date" class="input-field">
+      </div>
+
+      <div class="grid grid-cols-2 gap-2">
+        <button id="renewPaidBtn" class="chip active border-green-500/60">✅ مدفوع</button>
+        <button id="renewDebtBtn" class="chip border-red-500/60">❌ دين</button>
+      </div>
+
+      <button id="confirmRenewBtn" class="w-full bg-orange-600 hover:bg-orange-500 p-4 rounded-2xl font-black shadow-lg">
+        ✅ تثبيت التجديد
+      </button>
+
+      <p class="text-[10px] text-slate-500 font-bold">
+        التجديد هنا يسجّل عملية داخل دفتر العمليات حتى التقارير تصير دقيقة جدًا.
+      </p>
     </div>
+  </div>
 
-    <script>
-        const DB = "NAS_STABLE_V5_DATA";
-        let clients = JSON.parse(localStorage.getItem(DB)) || [];
-        let contactedToday = JSON.parse(localStorage.getItem('NAS_CONTACTED')) || [];
-        let filter = 'شهري';
-        let currentPaid = true;
-        let currentType = 'شهري';
-        let editIdx = null;
+  <!-- Toast Host -->
+  <div id="toastHost" class="fixed bottom-6 left-1/2 -translate-x-1/2 z-[80] space-y-2 w-[92%] max-w-md"></div>
 
-        const el = (id) => document.getElementById(id);
+<script>
+/* =========================
+   NAS V8.2 (No Deletion Upgrade)
+   ========================= */
 
-        function showSection(sec) {
-            ['home', 'add', 'list'].forEach(s => {
-                el('sec-'+s).classList.add('hidden');
-                el('btn-'+s).classList.remove('active');
-            });
-            el('sec-'+sec).classList.remove('hidden');
-            el('btn-'+sec).classList.add('active');
-            if(sec === 'home') updateHome();
-            if(sec === 'list') renderList();
+  // ✅ لا تغيّر هذا المفتاح حتى لا تضيع بيانات القدامى
+  const DB = "NAS_STABLE_V5_DATA";
+  const LEDGER_KEY = "NAS_LEDGER_V1";
+  const META_KEY = "NAS_META_V82";
+  const CONTACT_KEY = "NAS_CONTACTED"; // أبقيناه حتى لا نخرب القديم
+
+  const $ = (id) => document.getElementById(id);
+
+  const state = {
+    clients: [],
+    ledger: [],
+    meta: { version: "8.2", migratedAt: null, backupKey: null },
+
+    // UI state
+    sec: "home",
+    typeFilter: "شهري",
+    statusFilter: "all",
+    sortMode: "endAsc",
+    q: "",
+
+    // Add form
+    editId: null,
+    currentPaid: true,
+    currentType: "شهري",
+
+    // Renew
+    renewId: null,
+    renewPaid: true,
+    renewDays: 30,
+
+    // Contact store
+    contacted: { date: "", keys: [] },
+  };
+
+  /* -------- Helpers -------- */
+
+  function uid(){
+    try{
+      if (crypto && crypto.randomUUID) return crypto.randomUUID();
+    }catch(e){}
+    return "id-" + Date.now().toString(36) + "-" + Math.random().toString(36).slice(2,9);
+  }
+
+  function loadJSON(key, fallback){
+    try{
+      const raw = localStorage.getItem(key);
+      if (!raw) return fallback;
+      return JSON.parse(raw);
+    }catch(e){
+      return fallback;
+    }
+  }
+
+  function saveJSON(key, value){
+    localStorage.setItem(key, JSON.stringify(value));
+  }
+
+  // ✅ تاريخ محلي (بدون مشكلة UTC)
+  function isoDateLocal(d = new Date()){
+    const x = new Date(d.getTime() - d.getTimezoneOffset() * 60000);
+    return x.toISOString().split("T")[0];
+  }
+
+  function parseISODate(iso){
+    if (!iso || typeof iso !== "string") return null;
+    const parts = iso.split("-").map(Number);
+    if (parts.length !== 3) return null;
+    const [y,m,dd] = parts;
+    if (!y || !m || !dd) return null;
+    return new Date(y, m-1, dd);
+  }
+
+  function startOfDay(d){
+    return new Date(d.getFullYear(), d.getMonth(), d.getDate());
+  }
+
+  function daysLeft(endIso){
+    const end = parseISODate(endIso);
+    if (!end) return null;
+    const t = startOfDay(new Date());
+    const e = startOfDay(end);
+    return Math.round((e - t) / (1000*60*60*24));
+  }
+
+  function addDaysToISO(baseIso, days){
+    const base = parseISODate(baseIso) || new Date();
+    base.setDate(base.getDate() + Number(days || 0));
+    return isoDateLocal(base);
+  }
+
+  function formatMoney(n){
+    return (Number(n || 0)).toLocaleString("en-US");
+  }
+
+  function esc(s){
+    return (s ?? "").toString().replace(/[&<>"']/g, (c) => ({
+      "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"
+    }[c]));
+  }
+
+  function normalizePhone(phone){
+    let p = (phone || "").toString().trim();
+    p = p.replace(/[^\d]/g, "");
+    if (p.startsWith("964")) p = p.slice(3);
+    p = p.replace(/^0+/, "");
+    return p;
+  }
+
+  function normalizeInsta(u){
+    let s = (u || "").toString().trim();
+    s = s.replace(/^https?:\/\/(www\.)?instagram\.com\//, "");
+    s = s.replace(/^@/, "");
+    s = s.split(/[/?#]/)[0];
+    return s;
+  }
+
+  function waUrl(phone, text){
+    const p = normalizePhone(phone);
+    if (!p) return "#";
+    const base = `https://wa.me/964${p}`;
+    if (!text) return base;
+    return `${base}?text=${encodeURIComponent(text)}`;
+  }
+
+  function instaUrl(user){
+    const u = normalizeInsta(user);
+    if (!u) return "#";
+    return `https://instagram.com/${encodeURIComponent(u)}`;
+  }
+
+  function vibrate(ms=15){
+    try{ if (navigator.vibrate) navigator.vibrate(ms); }catch(e){}
+  }
+
+  function toast(message, kind="info"){
+    const host = $("toastHost");
+    const id = uid();
+    const bg =
+      kind === "ok" ? "bg-emerald-600" :
+      kind === "warn" ? "bg-orange-600" :
+      kind === "err" ? "bg-red-600" :
+      "bg-slate-800";
+
+    const el = document.createElement("div");
+    el.id = id;
+    el.className = `${bg} text-white p-4 rounded-2xl shadow-2xl border border-white/10`;
+    el.innerHTML = `
+      <div class="flex items-start justify-between gap-3">
+        <p class="text-sm font-black leading-relaxed">${esc(message)}</p>
+        <button class="text-white/80 font-black" data-close-toast="${id}">✕</button>
+      </div>
+    `;
+    host.appendChild(el);
+
+    setTimeout(() => {
+      const node = $(id);
+      if (node) node.remove();
+    }, 3200);
+  }
+
+  /* -------- Data Migration (No deletion) -------- */
+
+  function makeBackupIfNeeded(rawString){
+    if (!rawString) return;
+    state.meta = loadJSON(META_KEY, state.meta);
+
+    if (state.meta.backupKey) return; // مرة واحدة فقط
+    try{
+      const key = "NAS_BACKUP_" + new Date().toISOString().replaceAll(":","-");
+      // انتبه لمساحة التخزين - إذا كانت الداتا ضخمة جدًا لا نخزنها مرتين
+      if (rawString.length < 2_000_000){
+        localStorage.setItem(key, rawString);
+        state.meta.backupKey = key;
+        saveJSON(META_KEY, state.meta);
+      }
+    }catch(e){}
+  }
+
+  function migrateClients(){
+    const raw = localStorage.getItem(DB);
+    makeBackupIfNeeded(raw);
+
+    let clients = [];
+    try{
+      clients = JSON.parse(raw) || [];
+    }catch(e){
+      clients = [];
+    }
+    if (!Array.isArray(clients)) clients = [];
+
+    const nowISO = new Date().toISOString();
+
+    clients = clients.map((c) => {
+      const obj = (c && typeof c === "object") ? c : {};
+
+      const id = obj.id || obj.uuid || obj._id || uid();
+      const name = (obj.name || "").toString();
+      const phone = (obj.phone || "").toString();
+      const insta = (obj.insta || "").toString();
+
+      const service = (obj.service || "Canva Pro").toString();
+      const price = Number(obj.price) || 0;
+
+      const type = (obj.type || "شهري").toString();
+      const paid = (typeof obj.paid === "boolean") ? obj.paid : true;
+
+      const end = (obj.end || "").toString();
+      const created = (obj.created || obj.createdAt || nowISO).toString();
+
+      const archived = Boolean(obj.archived);
+      const archivedAt = obj.archivedAt ? obj.archivedAt : (archived ? nowISO : null);
+
+      return {
+        ...obj,
+        id, name, phone, insta,
+        service, price,
+        type, paid,
+        end, created,
+        updatedAt: obj.updatedAt || null,
+        lastPaymentAt: obj.lastPaymentAt || null,
+        notes: obj.notes || "",
+        archived,
+        archivedAt
+      };
+    });
+
+    // حفظ الترحيل (بدون حذف أي أحد)
+    saveJSON(DB, clients);
+
+    state.clients = clients;
+    state.meta = loadJSON(META_KEY, state.meta);
+    state.meta.migratedAt = state.meta.migratedAt || new Date().toISOString();
+    saveJSON(META_KEY, state.meta);
+  }
+
+  function migrateLedger(){
+    let ledger = loadJSON(LEDGER_KEY, []);
+    if (!Array.isArray(ledger)) ledger = [];
+
+    // إذا ماكو دفتر عمليات -> نسويه من بيانات القدامى (حتى التقارير تشتغل)
+    if (ledger.length === 0 && state.clients.length){
+      ledger = state.clients.map((c) => ({
+        id: uid(),
+        clientId: c.id,
+        name: c.name,
+        service: c.service,
+        type: c.type || "شهري",
+        price: Number(c.price) || 0,
+        paid: !!c.paid,
+        end: c.end || "",
+        at: c.created || new Date().toISOString()
+      }));
+      saveJSON(LEDGER_KEY, ledger);
+    }
+
+    state.ledger = ledger;
+  }
+
+  function loadContactStore(){
+    const today = isoDateLocal(new Date());
+    const raw = loadJSON(CONTACT_KEY, null);
+
+    // قديم: كان array فقط
+    if (Array.isArray(raw)){
+      return { date: today, keys: raw };
+    }
+
+    if (raw && typeof raw === "object"){
+      const date = raw.date || today;
+      const keys = Array.isArray(raw.keys) ? raw.keys : [];
+      if (date !== today) return { date: today, keys: [] };
+      return { date, keys };
+    }
+
+    return { date: today, keys: [] };
+  }
+
+  function saveContactStore(){
+    saveJSON(CONTACT_KEY, state.contacted);
+  }
+
+  /* -------- UI Navigation -------- */
+
+  function showSection(sec){
+    const secs = ["home","add","list","tools"];
+    secs.forEach(s => {
+      const box = $("sec-"+s);
+      const btn = $("btn-"+s);
+      box.classList.add("hidden");
+      btn.classList.remove("active");
+    });
+
+    $("sec-"+sec).classList.remove("hidden");
+    $("btn-"+sec).classList.add("active");
+
+    // إعادة تشغيل حركة بسيطة
+    $("sec-"+sec).classList.remove("section-enter");
+    void $("sec-"+sec).offsetWidth;
+    $("sec-"+sec).classList.add("section-enter");
+
+    state.sec = sec;
+
+    if (sec === "home") updateHome();
+    if (sec === "list") renderList();
+    if (sec === "tools") renderTools();
+  }
+
+  /* -------- Home Computations -------- */
+
+  function computeLedgerStats(){
+    const now = new Date();
+    const today = isoDateLocal(now);
+    const startWeek = new Date(now.getTime() - 7*24*60*60*1000);
+    const month = now.getMonth();
+    const year = now.getFullYear();
+
+    let dP=0, dD=0, wP=0, wD=0, mP=0, mD=0, totalDebt=0;
+
+    state.ledger.forEach(tx => {
+      const at = new Date(tx.at || Date.now());
+      const txDay = isoDateLocal(at);
+
+      if (tx.paid) {
+        if (txDay === today) dP += Number(tx.price) || 0;
+        if (at >= startWeek) wP += Number(tx.price) || 0;
+        if (at.getMonth() === month && at.getFullYear() === year) mP += Number(tx.price) || 0;
+      } else {
+        totalDebt += Number(tx.price) || 0;
+        if (txDay === today) dD += Number(tx.price) || 0;
+        if (at >= startWeek) wD += Number(tx.price) || 0;
+        if (at.getMonth() === month && at.getFullYear() === year) mD += Number(tx.price) || 0;
+      }
+    });
+
+    return { dP,dD,wP,wD,mP,mD,totalDebt };
+  }
+
+  function computeClientKpis(){
+    const today = isoDateLocal(new Date());
+
+    let active=0, due7=0, expired=0;
+
+    state.clients.forEach(c => {
+      if (c.archived) return;
+      const dl = daysLeft(c.end);
+      if (dl === null) return;
+      if (dl >= 0) active++;
+      if (dl >= 0 && dl <= 7) due7++;
+      if (dl < 0) expired++;
+    });
+
+    return { active, due7, expired, today };
+  }
+
+  function renderTopServices(){
+    // top by count (ledger)
+    const map = new Map();
+    state.ledger.forEach(tx => {
+      const s = (tx.service || "خدمة").toString();
+      const prev = map.get(s) || { count: 0, cash: 0 };
+      prev.count += 1;
+      if (tx.paid) prev.cash += Number(tx.price) || 0;
+      map.set(s, prev);
+    });
+
+    const arr = [...map.entries()]
+      .map(([service, v]) => ({ service, ...v }))
+      .sort((a,b) => (b.count - a.count) || (b.cash - a.cash))
+      .slice(0, 5);
+
+    const box = $("top-services");
+    if (!arr.length){
+      box.innerHTML = `<p class="text-xs text-slate-500 font-black text-center">لا توجد بيانات كافية.</p>`;
+      return;
+    }
+
+    box.innerHTML = arr.map((x, idx) => `
+      <div class="flex items-center justify-between bg-slate-900/40 border border-slate-700/40 rounded-2xl p-3">
+        <div class="flex items-center gap-2">
+          <span class="w-7 h-7 rounded-xl bg-slate-800 flex items-center justify-center text-xs font-black">${idx+1}</span>
+          <div>
+            <p class="text-xs font-black">${esc(x.service)}</p>
+            <p class="text-[10px] text-slate-400 font-bold">عدد العمليات: ${x.count}</p>
+          </div>
+        </div>
+        <div class="text-left">
+          <p class="text-[10px] text-emerald-300 font-black">كاش: ${formatMoney(x.cash)}</p>
+        </div>
+      </div>
+    `).join("");
+  }
+
+  function renderLast6MonthsChart(){
+    // Cash only, last 6 months
+    const now = new Date();
+    const buckets = [];
+
+    for (let i=5; i>=0; i--){
+      const d = new Date(now.getFullYear(), now.getMonth()-i, 1);
+      buckets.push({
+        key: `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0")}`,
+        label: d.toLocaleDateString("ar-IQ", { month: "short", year: "numeric" }),
+        value: 0
+      });
+    }
+
+    const map = new Map(buckets.map(b => [b.key, b]));
+    state.ledger.forEach(tx => {
+      if (!tx.paid) return;
+      const at = new Date(tx.at || Date.now());
+      const key = `${at.getFullYear()}-${String(at.getMonth()+1).padStart(2,"0")}`;
+      if (map.has(key)){
+        map.get(key).value += Number(tx.price) || 0;
+      }
+    });
+
+    const max = Math.max(...buckets.map(b => b.value), 1);
+    const box = $("month-chart");
+
+    box.innerHTML = buckets.map(b => {
+      const w = Math.round((b.value / max) * 100);
+      return `
+        <div class="space-y-1">
+          <div class="flex items-center justify-between">
+            <p class="text-[10px] text-slate-300 font-black">${esc(b.label)}</p>
+            <p class="text-[10px] text-slate-400 font-black">${formatMoney(b.value)}</p>
+          </div>
+          <div class="w-full h-3 rounded-full bg-slate-900/60 border border-slate-700/40 overflow-hidden">
+            <div class="h-full rounded-full bg-blue-500" style="width:${w}%; opacity:.9"></div>
+          </div>
+        </div>
+      `;
+    }).join("");
+  }
+
+  function updateHome(){
+    $("todayLabel").innerText = new Date().toLocaleDateString("ar-IQ", { weekday:"long", year:"numeric", month:"long", day:"numeric" });
+
+    const k = computeClientKpis();
+    const s = computeLedgerStats();
+
+    $("k-active").innerText = k.active.toLocaleString("en-US");
+    $("k-due7").innerText = k.due7.toLocaleString("en-US");
+    $("k-expired").innerText = k.expired.toLocaleString("en-US");
+    $("k-totalDebt").innerText = formatMoney(s.totalDebt);
+
+    $("d-paid").innerText = formatMoney(s.dP);
+    $("d-debt").innerText = formatMoney(s.dD);
+    $("w-paid").innerText = formatMoney(s.wP);
+    $("w-debt").innerText = formatMoney(s.wD);
+    $("m-paid").innerText = formatMoney(s.mP);
+    $("m-debt").innerText = formatMoney(s.mD);
+
+    renderReminders();
+    renderTopServices();
+    renderLast6MonthsChart();
+  }
+
+  function reminderCard(c, tagText, tagClass){
+    const dl = daysLeft(c.end);
+    const phoneOK = normalizePhone(c.phone);
+    const msg = `السلام عليكم 😊\nاشتراكك ${c.type || "شهري"} (${c.service}) ينتهي ${tagText}.\nتحب نجدد لك؟`;
+
+    return `
+      <div class="bg-slate-900/40 border border-slate-700/40 rounded-3xl p-4 flex items-center justify-between gap-3 border-r-4 ${tagClass}">
+        <div class="min-w-0">
+          <p class="text-xs font-black truncate">${esc(c.name)}</p>
+          <p class="text-[10px] text-slate-400 font-bold truncate">${esc(c.service)} • ${formatMoney(c.price)} د.ع</p>
+          <p class="text-[10px] text-slate-500 font-black mt-1">ينتهي: ${esc(c.end)} • ${dl === null ? "-" : (dl >=0 ? `بعد ${dl} يوم` : `متأخر ${Math.abs(dl)} يوم`)}</p>
+        </div>
+        <div class="flex flex-col gap-2">
+          <button class="chip !text-[10px] !px-3 !py-2 border-orange-500/60"
+                  data-action="remind" data-id="${esc(c.id)}" ${phoneOK ? "" : "disabled"}
+                  title="${phoneOK ? "" : "أضف رقم صحيح أولاً"}">
+            🔔 تذكير
+          </button>
+          <button class="chip !text-[10px] !px-3 !py-2 border-blue-500/60"
+                  data-action="renew" data-id="${esc(c.id)}">
+            ⚡ تجديد
+          </button>
+        </div>
+      </div>
+    `;
+  }
+
+  function renderReminders(){
+    const today = isoDateLocal(new Date());
+    const tomorrow = addDaysToISO(today, 1);
+
+    const cstore = state.contacted;
+
+    // keys: ندعم الجديد + القديم (name+end)
+    function isContacted(c){
+      const keyNew = `${c.id}|${c.end}`;
+      const keyOld = `${c.name}${c.end}`;
+      return cstore.keys.includes(keyNew) || cstore.keys.includes(keyOld);
+    }
+
+    const actives = state.clients.filter(c => !c.archived && c.end);
+    const todayEnds = actives.filter(c => c.end === today && !isContacted(c));
+    const tomorrowEnds = actives.filter(c => c.end === tomorrow && !isContacted(c));
+    const due7 = actives.filter(c => {
+      const dl = daysLeft(c.end);
+      return dl !== null && dl >= 2 && dl <= 7 && !isContacted(c);
+    }).sort((a,b) => (daysLeft(a.end) - daysLeft(b.end)));
+
+    const expired = actives.filter(c => {
+      const dl = daysLeft(c.end);
+      return dl !== null && dl < 0 && !isContacted(c);
+    }).slice(0, 4);
+
+    const box = $("reminder-list");
+
+    const parts = [];
+    if (todayEnds.length){
+      parts.push(`<p class="text-[11px] font-black text-red-300">🔥 ينتهي اليوم</p>`);
+      parts.push(todayEnds.map(c => reminderCard(c, "اليوم", "border-red-500")).join(""));
+    }
+    if (tomorrowEnds.length){
+      parts.push(`<p class="text-[11px] font-black text-orange-300 mt-3">⏳ باچر ينتهي</p>`);
+      parts.push(tomorrowEnds.map(c => reminderCard(c, "باچر", "border-orange-500")).join(""));
+    }
+    if (due7.length){
+      parts.push(`<p class="text-[11px] font-black text-blue-300 mt-3">🧠 قريباً (7 أيام)</p>`);
+      parts.push(due7.map(c => reminderCard(c, "قريباً", "border-blue-500")).join(""));
+    }
+    if (!todayEnds.length && !tomorrowEnds.length && !due7.length){
+      parts.push(`<p class="text-center text-xs text-slate-500 font-black">لا توجد تذكيرات حالياً 🎉</p>`);
+    }
+    if (expired.length){
+      parts.push(`<p class="text-[11px] font-black text-slate-300 mt-3">⚠️ منتهية (مختصر)</p>`);
+      parts.push(expired.map(c => reminderCard(c, "منتهي", "border-slate-500")).join(""));
+    }
+
+    box.innerHTML = parts.join("");
+  }
+
+  function markContacted(client){
+    const keyNew = `${client.id}|${client.end}`;
+    if (!state.contacted.keys.includes(keyNew)){
+      state.contacted.keys.push(keyNew);
+      saveContactStore();
+    }
+  }
+
+  /* -------- Add / Edit -------- */
+
+  function setPaidState(paid){
+    state.currentPaid = !!paid;
+    $("p-true").classList.toggle("active", state.currentPaid);
+    $("p-false").classList.toggle("active", !state.currentPaid);
+    $("p-true").classList.toggle("border-green-500/60", true);
+    $("p-false").classList.toggle("border-red-500/60", true);
+  }
+
+  function setTypeByDuration(days, type){
+    state.currentType = type;
+    // UI chips
+    [...$("durBtns").querySelectorAll(".chip")].forEach(b => {
+      b.classList.toggle("active", b.dataset.type === type);
+    });
+
+    const today = isoDateLocal(new Date());
+    const base = $("expDate").value || today;
+    // إذا المستخدم محدد تاريخ سابق، خلّيه من اليوم
+    const basePick = (parseISODate(base) ? base : today);
+    $("expDate").value = addDaysToISO(basePick, Number(days));
+  }
+
+  function getServiceValue(){
+    const sel = $("service-select").value;
+    if (sel === "CUSTOM"){
+      const v = $("service-custom").value.trim();
+      return v || "خدمة أخرى";
+    }
+    return sel;
+  }
+
+  function syncCustomServiceUI(){
+    const sel = $("service-select").value;
+    $("customServiceWrap").classList.toggle("hidden", sel !== "CUSTOM");
+  }
+
+  function clearForm(){
+    state.editId = null;
+    $("name").value = "";
+    $("phone").value = "";
+    $("price").value = "";
+    $("insta").value = "";
+    $("notes").value = "";
+    $("service-select").value = "Canva Pro";
+    $("service-custom").value = "";
+    syncCustomServiceUI();
+
+    setPaidState(true);
+    // افتراضي شهري
+    [...$("durBtns").querySelectorAll(".chip")].forEach(b => b.classList.toggle("active", b.dataset.type === "شهري"));
+    state.currentType = "شهري";
+    $("expDate").value = addDaysToISO(isoDateLocal(new Date()), 30);
+
+    $("mainBtn").innerText = "💾 حفظ البيانات";
+  }
+
+  function addLedgerEntry({client, price, paid, end, at, service, type}){
+    state.ledger.unshift({
+      id: uid(),
+      clientId: client.id,
+      name: client.name,
+      service: service || client.service,
+      type: type || client.type,
+      price: Number(price) || 0,
+      paid: !!paid,
+      end: end || client.end,
+      at: at || new Date().toISOString()
+    });
+    saveJSON(LEDGER_KEY, state.ledger);
+  }
+
+  function saveData({openReceipt=false} = {}){
+    const name = $("name").value.trim();
+    const phone = normalizePhone($("phone").value);
+    const insta = normalizeInsta($("insta").value);
+    const price = Number($("price").value) || 0;
+    const service = getServiceValue();
+    const end = $("expDate").value;
+    const notes = $("notes").value.trim();
+
+    if (!name || !end){
+      toast("يرجى إكمال الاسم وتاريخ الانتهاء *", "warn");
+      vibrate(30);
+      return;
+    }
+
+    // تجهيز بيانات
+    const payload = {
+      name,
+      phone,
+      insta,
+      price,
+      service,
+      end,
+      paid: state.currentPaid,
+      type: state.currentType,
+      notes,
+      updatedAt: new Date().toISOString()
+    };
+
+    if (state.editId){
+      const idx = state.clients.findIndex(c => c.id === state.editId);
+      if (idx === -1){
+        toast("تعذر العثور على المشترك للتحديث.", "err");
+        return;
+      }
+
+      // تحديث بدون تخريب created (حتى التقارير تبقى صحيحة)
+      state.clients[idx] = {
+        ...state.clients[idx],
+        ...payload
+      };
+      saveJSON(DB, state.clients);
+      toast("تم تحديث بيانات المشترك ✅", "ok");
+      vibrate(18);
+
+      if (openReceipt) openReceiptById(state.clients[idx].id);
+
+      showSection("list");
+      renderList();
+      updateHome();
+      return;
+    }
+
+    // إضافة جديدة
+    const client = {
+      id: uid(),
+      created: new Date().toISOString(),
+      archived: false,
+      archivedAt: null,
+      lastPaymentAt: new Date().toISOString(),
+      ...payload
+    };
+
+    state.clients.unshift(client);
+    saveJSON(DB, state.clients);
+
+    // تسجيل عملية في الدفتر
+    addLedgerEntry({
+      client,
+      price: client.price,
+      paid: client.paid,
+      end: client.end,
+      service: client.service,
+      type: client.type,
+      at: client.created
+    });
+
+    toast("تم حفظ المشترك + تسجيل العملية ✅", "ok");
+    vibrate(18);
+
+    if (openReceipt) openReceiptById(client.id);
+
+    clearForm();
+    updateHome();
+    showSection("home");
+  }
+
+  function editUserById(id){
+    const c = state.clients.find(x => x.id === id);
+    if (!c) return toast("المشترك غير موجود.", "err");
+
+    state.editId = c.id;
+
+    $("name").value = c.name || "";
+    $("phone").value = c.phone || "";
+    $("price").value = c.price || "";
+    $("insta").value = c.insta || "";
+    $("notes").value = c.notes || "";
+    $("expDate").value = c.end || isoDateLocal(new Date());
+
+    // Service handling
+    const options = [...$("service-select").options].map(o => o.value);
+    if (options.includes(c.service)){
+      $("service-select").value = c.service;
+      $("service-custom").value = "";
+    } else {
+      $("service-select").value = "CUSTOM";
+      $("service-custom").value = c.service || "";
+    }
+    syncCustomServiceUI();
+
+    // Type chips
+    state.currentType = c.type || "شهري";
+    [...$("durBtns").querySelectorAll(".chip")].forEach(b => {
+      b.classList.toggle("active", b.dataset.type === state.currentType);
+    });
+
+    setPaidState(!!c.paid);
+
+    $("mainBtn").innerText = "🔄 تحديث البيانات";
+    showSection("add");
+    toast("أنت الآن بوضع التعديل ✏️", "info");
+  }
+
+  function archiveById(id){
+    const idx = state.clients.findIndex(c => c.id === id);
+    if (idx === -1) return;
+
+    state.clients[idx].archived = true;
+    state.clients[idx].archivedAt = new Date().toISOString();
+    saveJSON(DB, state.clients);
+
+    toast("تم نقل المشترك إلى الأرشيف 🗃️ (بدون حذف)", "ok");
+    vibrate(15);
+
+    renderList();
+    updateHome();
+    renderTools();
+  }
+
+  function restoreById(id){
+    const idx = state.clients.findIndex(c => c.id === id);
+    if (idx === -1) return;
+
+    state.clients[idx].archived = false;
+    state.clients[idx].archivedAt = null;
+    saveJSON(DB, state.clients);
+
+    toast("تمت استعادة المشترك من الأرشيف ✅", "ok");
+    vibrate(15);
+
+    renderTools();
+    renderList();
+    updateHome();
+  }
+
+  function toggleTypeById(id){
+    const idx = state.clients.findIndex(c => c.id === id);
+    if (idx === -1) return;
+    const cur = state.clients[idx].type || "شهري";
+    state.clients[idx].type = (cur === "سنوي") ? "شهري" : "سنوي";
+    saveJSON(DB, state.clients);
+    toast(`تم نقل الاشتراك إلى: ${state.clients[idx].type}`, "ok");
+    renderList();
+    updateHome();
+  }
+
+  /* -------- List Rendering -------- */
+
+  function statusBadge(c){
+    const dl = daysLeft(c.end);
+    if (dl === null) return `<span class="text-[10px] font-black text-slate-400">بدون تاريخ</span>`;
+
+    if (dl < 0) return `<span class="text-[10px] font-black text-red-300">⚠️ منتهي</span>`;
+    if (dl <= 7) return `<span class="text-[10px] font-black text-orange-300">⏳ قريب</span>`;
+    return `<span class="text-[10px] font-black text-green-300">✅ فعّال</span>`;
+  }
+
+  function paidBadge(c){
+    return c.paid
+      ? `<span class="text-[10px] font-black text-emerald-300">🟢 مدفوع</span>`
+      : `<span class="text-[10px] font-black text-red-300">🔴 دين</span>`;
+  }
+
+  function renderList(){
+    const q = ($("search").value || "").toLowerCase().trim();
+    state.q = q;
+
+    const today = isoDateLocal(new Date());
+
+    let arr = state.clients.slice();
+
+    // status filter (archived)
+    if (state.statusFilter === "archived"){
+      arr = arr.filter(c => !!c.archived);
+    } else {
+      arr = arr.filter(c => !c.archived);
+    }
+
+    // type filter
+    if (state.typeFilter !== "الكل"){
+      arr = arr.filter(c => (c.type || "شهري") === state.typeFilter);
+    }
+
+    // status filter (non-archived modes)
+    if (state.statusFilter !== "all" && state.statusFilter !== "archived"){
+      arr = arr.filter(c => {
+        const dl = daysLeft(c.end);
+        if (dl === null) return false;
+
+        if (state.statusFilter === "paid") return !!c.paid;
+        if (state.statusFilter === "debt") return !c.paid;
+        if (state.statusFilter === "due7") return dl >= 0 && dl <= 7;
+        if (state.statusFilter === "expired") return dl < 0;
+        return true;
+      });
+    }
+
+    // search (name/phone/service/insta)
+    if (q){
+      arr = arr.filter(c => {
+        const hay = `${c.name||""} ${c.phone||""} ${c.service||""} ${c.insta||""}`.toLowerCase();
+        return hay.includes(q);
+      });
+    }
+
+    // sort
+    const sortMode = $("sortMode").value || "endAsc";
+    state.sortMode = sortMode;
+
+    function endValue(c){
+      // إذا ماكو تاريخ نخليه بعيد
+      return c.end ? c.end : "9999-12-31";
+    }
+
+    if (sortMode === "endAsc"){
+      arr.sort((a,b) => endValue(a).localeCompare(endValue(b)));
+    } else if (sortMode === "endDesc"){
+      arr.sort((a,b) => endValue(b).localeCompare(endValue(a)));
+    } else if (sortMode === "name"){
+      arr.sort((a,b) => (a.name||"").localeCompare((b.name||""), "ar"));
+    } else if (sortMode === "recent"){
+      arr.sort((a,b) => {
+        const da = new Date(a.lastPaymentAt || a.updatedAt || a.created || 0).getTime();
+        const db = new Date(b.lastPaymentAt || b.updatedAt || b.created || 0).getTime();
+        return db - da;
+      });
+    }
+
+    $("listCount").innerText = arr.length.toLocaleString("en-US");
+
+    const list = $("main-list");
+    if (!arr.length){
+      list.innerHTML = `
+        <div class="glass p-6 rounded-[2.5rem] text-center">
+          <p class="text-sm font-black text-slate-200">لا توجد نتائج</p>
+          <p class="text-xs text-slate-500 font-bold mt-2">جرّب تغيّر الفلاتر أو اكتب كلمة بحث ثانية.</p>
+        </div>
+      `;
+      return;
+    }
+
+    list.innerHTML = arr.map((c) => {
+      const dl = daysLeft(c.end);
+      const border =
+        dl === null ? "border-slate-600" :
+        dl < 0 ? "border-red-600" :
+        (!c.paid ? "border-red-400" : (dl<=7 ? "border-orange-500" : "border-green-500"));
+
+      const phone = normalizePhone(c.phone);
+      const insta = normalizeInsta(c.insta);
+
+      return `
+        <div class="glass p-4 rounded-[2.5rem] border-r-4 ${border}">
+          <div class="flex justify-between gap-3 mb-3">
+            <div class="min-w-0">
+              <h4 class="font-black text-sm truncate">${esc(c.name)}</h4>
+              <p class="text-[10px] text-blue-300 font-black truncate">${esc(c.service)} • ${formatMoney(c.price)} د.ع</p>
+              <div class="flex gap-2 mt-2 flex-wrap">
+                ${paidBadge(c)}
+                <span class="text-[10px] font-black text-slate-300">🗓️ ${esc(c.type || "شهري")}</span>
+                ${statusBadge(c)}
+              </div>
+            </div>
+
+            <div class="text-left">
+              <p class="text-[9px] text-slate-400 font-black">ينتهي: ${esc(c.end || "-")}</p>
+              <p class="text-[9px] text-slate-500 font-black mt-1">
+                ${dl === null ? "-" : (dl >= 0 ? `بعد ${dl} يوم` : `متأخر ${Math.abs(dl)} يوم`)}
+              </p>
+
+              <button class="text-[8px] bg-slate-800 px-2 py-1 rounded-lg mt-2 border border-slate-700"
+                      data-action="toggleType" data-id="${esc(c.id)}">
+                🔄 نقل إلى ${ (c.type === "سنوي") ? "شهري" : "سنوي" }
+              </button>
+            </div>
+          </div>
+
+          <div class="flex flex-wrap gap-2 items-center">
+            <button class="chip !text-[10px] !px-3 !py-2 border-white/30"
+                    data-action="receipt" data-id="${esc(c.id)}">وصل 📄</button>
+
+            <button class="chip !text-[10px] !px-3 !py-2 border-orange-500/50"
+                    data-action="renew" data-id="${esc(c.id)}">تجديد ⚡</button>
+
+            <button class="chip !text-[10px] !px-3 !py-2 border-slate-500/50"
+                    data-action="edit" data-id="${esc(c.id)}">تعديل ✏️</button>
+
+            <a class="chip !text-[10px] !px-3 !py-2 border-green-500/50"
+               href="${phone ? waUrl(phone) : "#"}" target="_blank" rel="noopener"
+               ${phone ? "" : 'onclick="return false;" style="opacity:.45; cursor:not-allowed;"'}>
+              واتساب 🟢
+            </a>
+
+            <a class="chip !text-[10px] !px-3 !py-2 border-pink-500/50"
+               href="${insta ? instaUrl(insta) : "#"}" target="_blank" rel="noopener"
+               ${insta ? "" : 'onclick="return false;" style="opacity:.45; cursor:not-allowed;"'}>
+              انستغرام 🟣
+            </a>
+
+            ${
+              state.statusFilter === "archived"
+              ? `<button class="chip !text-[10px] !px-3 !py-2 border-blue-500/50 mr-auto"
+                         data-action="restore" data-id="${esc(c.id)}">استعادة ✅</button>`
+              : `<button class="text-red-300 font-black mr-auto"
+                         data-action="archive" data-id="${esc(c.id)}" title="أرشفة بدون حذف">🗃️</button>`
+            }
+          </div>
+        </div>
+      `;
+    }).join("");
+  }
+
+  /* -------- Receipt -------- */
+
+  function openReceiptById(id){
+    const c = state.clients.find(x => x.id === id);
+    if (!c) return toast("المشترك غير موجود.", "err");
+
+    $("rName").innerText = c.name || "-";
+    $("rService").innerText = c.service || "-";
+    $("rPrice").innerText = formatMoney(c.price) + " د.ع";
+    $("rPaid").innerText = c.paid ? "مدفوع ✅" : "دين ❌";
+    $("rEnd").innerText = c.end || "-";
+    $("rAt").innerText = new Date().toLocaleString("ar-IQ");
+
+    // QR
+    $("qrBox").innerHTML = "";
+    const qrText = `NAS|${c.name}|${c.service}|${c.price}|${c.end}|${c.paid ? "PAID" : "DEBT"}`;
+    try{
+      new QRCode($("qrBox"), {
+        text: qrText,
+        width: 86,
+        height: 86,
+        correctLevel: QRCode.CorrectLevel.M
+      });
+    }catch(e){
+      // لو فشل، لا مشكلة
+    }
+
+    $("receiptModal").classList.remove("hidden");
+  }
+
+  async function shareReceipt(){
+    try{
+      const canvas = await html2canvas($("printableReceipt"), { scale: 3, backgroundColor: "#ffffff" });
+      canvas.toBlob(blob => {
+        const file = new File([blob], 'NAS_Receipt.png', {type:'image/png'});
+        if (navigator.canShare && navigator.canShare({files:[file]})){
+          navigator.share({files:[file], title:"NAS Receipt"});
+        } else {
+          const a = document.createElement('a');
+          a.download = 'NAS_Receipt.png';
+          a.href = canvas.toDataURL('image/png');
+          a.click();
         }
+      });
+    }catch(e){
+      toast("تعذر إنشاء صورة الوصل.", "err");
+    }
+  }
 
-        function setDuration(days, type) {
-            currentType = type;
-            const d = new Date();
-            d.setDate(d.getDate() + days);
-            el('expDate').value = d.toISOString().split('T')[0];
+  /* -------- Renew -------- */
+
+  function openRenewModal(id){
+    const c = state.clients.find(x => x.id === id);
+    if (!c) return toast("المشترك غير موجود.", "err");
+
+    state.renewId = id;
+
+    $("renewName").innerText = c.name || "-";
+    $("renewService").innerText = `${c.service || "-"} • نوع: ${c.type || "شهري"}`;
+
+    // default days based on type
+    state.renewDays = (c.type === "سنوي") ? 365 : 30;
+
+    $("renewMon").classList.toggle("active", state.renewDays === 30);
+    $("renewYear").classList.toggle("active", state.renewDays === 365);
+
+    // default paid = true
+    state.renewPaid = true;
+    $("renewPaidBtn").classList.add("active");
+    $("renewDebtBtn").classList.remove("active");
+
+    $("renewPrice").value = Number(c.price) || 0;
+
+    // base date = max(today, current end)
+    const today = isoDateLocal(new Date());
+    const base = (c.end && c.end >= today) ? c.end : today;
+    $("renewEnd").value = addDaysToISO(base, state.renewDays);
+
+    $("renewModal").classList.remove("hidden");
+    vibrate(10);
+  }
+
+  function setRenewPaid(paid){
+    state.renewPaid = !!paid;
+    $("renewPaidBtn").classList.toggle("active", state.renewPaid);
+    $("renewDebtBtn").classList.toggle("active", !state.renewPaid);
+  }
+
+  function setRenewDays(days){
+    state.renewDays = Number(days);
+
+    $("renewMon").classList.toggle("active", state.renewDays === 30);
+    $("renewYear").classList.toggle("active", state.renewDays === 365);
+
+    const c = state.clients.find(x => x.id === state.renewId);
+    if (!c) return;
+
+    const today = isoDateLocal(new Date());
+    const base = (c.end && c.end >= today) ? c.end : today;
+    $("renewEnd").value = addDaysToISO(base, state.renewDays);
+  }
+
+  function confirmRenew(){
+    const c = state.clients.find(x => x.id === state.renewId);
+    if (!c) return toast("المشترك غير موجود.", "err");
+
+    const newEnd = $("renewEnd").value;
+    const price = Number($("renewPrice").value) || 0;
+
+    if (!newEnd){
+      toast("اختر تاريخ انتهاء صحيح.", "warn");
+      return;
+    }
+
+    // تحديث العميل
+    c.end = newEnd;
+    c.price = price;
+    c.paid = state.renewPaid;
+    c.updatedAt = new Date().toISOString();
+    c.lastPaymentAt = new Date().toISOString();
+
+    saveJSON(DB, state.clients);
+
+    // تسجيل عملية
+    addLedgerEntry({
+      client: c,
+      price,
+      paid: c.paid,
+      end: c.end,
+      service: c.service,
+      type: c.type,
+      at: new Date().toISOString()
+    });
+
+    toast("تم التجديد + تسجيل العملية ✅", "ok");
+    vibrate(18);
+
+    $("renewModal").classList.add("hidden");
+    updateHome();
+    renderList();
+  }
+
+  /* -------- Tools -------- */
+
+  function exportJSONFile(){
+    const payload = {
+      app: "NAS",
+      version: state.meta.version,
+      exportedAt: new Date().toISOString(),
+      clients: state.clients,
+      ledger: state.ledger
+    };
+
+    const blob = new Blob([JSON.stringify(payload, null, 2)], {type:"application/json"});
+    const a = document.createElement("a");
+    a.href = URL.createObjectURL(blob);
+    a.download = `NAS_Backup_${isoDateLocal(new Date())}.json`;
+    a.click();
+    URL.revokeObjectURL(a.href);
+
+    toast("تم تصدير نسخة JSON ✅", "ok");
+  }
+
+  function exportLedgerCSV(){
+    const rows = [
+      ["id","clientId","name","service","type","price","paid","end","at"]
+    ];
+
+    state.ledger.forEach(tx => {
+      rows.push([
+        tx.id, tx.clientId,
+        (tx.name||"").replaceAll('"','""'),
+        (tx.service||"").replaceAll('"','""'),
+        (tx.type||""),
+        Number(tx.price)||0,
+        tx.paid ? "PAID" : "DEBT",
+        tx.end || "",
+        tx.at || ""
+      ]);
+    });
+
+    const csv = rows.map(r => r.map(v => `"${String(v ?? "").replaceAll('"','""')}"`).join(",")).join("\n");
+    const blob = new Blob([csv], {type:"text/csv;charset=utf-8"});
+    const a = document.createElement("a");
+    a.href = URL.createObjectURL(blob);
+    a.download = `NAS_Ledger_${isoDateLocal(new Date())}.csv`;
+    a.click();
+    URL.revokeObjectURL(a.href);
+
+    toast("تم تصدير CSV للعمليات ✅", "ok");
+  }
+
+  async function importJSONFile(file){
+    try{
+      const text = await file.text();
+      const data = JSON.parse(text);
+
+      const incomingClients = Array.isArray(data.clients) ? data.clients : [];
+      const incomingLedger  = Array.isArray(data.ledger) ? data.ledger : [];
+
+      const existingIds = new Set(state.clients.map(c => c.id));
+      let addedClients = 0;
+
+      incomingClients.forEach(c => {
+        if (!c || typeof c !== "object") return;
+        const id = c.id || uid();
+        if (existingIds.has(id)) return;
+        existingIds.add(id);
+        state.clients.push({
+          ...c,
+          id,
+          name: (c.name || "").toString(),
+          phone: (c.phone || "").toString(),
+          insta: (c.insta || "").toString(),
+          service: (c.service || "Canva Pro").toString(),
+          price: Number(c.price) || 0,
+          type: (c.type || "شهري").toString(),
+          paid: (typeof c.paid === "boolean") ? c.paid : true,
+          end: (c.end || "").toString(),
+          created: (c.created || new Date().toISOString()).toString(),
+          archived: !!c.archived,
+          archivedAt: c.archivedAt || null
+        });
+        addedClients++;
+      });
+
+      const existingTx = new Set(state.ledger.map(tx => tx.id));
+      let addedTx = 0;
+      incomingLedger.forEach(tx => {
+        if (!tx || typeof tx !== "object") return;
+        const id = tx.id || uid();
+        if (existingTx.has(id)) return;
+        existingTx.add(id);
+        state.ledger.push({ ...tx, id });
+        addedTx++;
+      });
+
+      // حفظ
+      saveJSON(DB, state.clients);
+      saveJSON(LEDGER_KEY, state.ledger);
+
+      toast(`تم الاستيراد ✅ (مشتركين: +${addedClients} / عمليات: +${addedTx})`, "ok");
+      updateHome();
+      renderList();
+      renderTools();
+    }catch(e){
+      toast("فشل الاستيراد: الملف غير صالح.", "err");
+    }
+  }
+
+  function resetContactToday(){
+    state.contacted = { date: isoDateLocal(new Date()), keys: [] };
+    saveContactStore();
+    toast("تم تصفير سجل التذكير لليوم ✅", "ok");
+    updateHome();
+  }
+
+  function runRepair(){
+    migrateClients();
+    migrateLedger();
+    state.contacted = loadContactStore();
+    toast("تم إصلاح/ترحيل البيانات ✅", "ok");
+    updateHome();
+    renderList();
+    renderTools();
+  }
+
+  function renderTools(){
+    const archived = state.clients.filter(c => !!c.archived);
+    $("archivedCount").innerText = archived.length.toLocaleString("en-US");
+
+    const box = $("archive-list");
+    if (!archived.length){
+      box.innerHTML = `<p class="text-xs text-slate-500 font-black text-center">الأرشيف فارغ.</p>`;
+      return;
+    }
+
+    // عرض آخر 12 فقط
+    const show = archived.slice(0, 12);
+
+    box.innerHTML = show.map(c => `
+      <div class="bg-slate-900/40 border border-slate-700/40 rounded-3xl p-4 flex items-center justify-between gap-3">
+        <div class="min-w-0">
+          <p class="text-xs font-black truncate">${esc(c.name)}</p>
+          <p class="text-[10px] text-slate-400 font-bold truncate">${esc(c.service)} • ${formatMoney(c.price)} د.ع</p>
+          <p class="text-[10px] text-slate-500 font-black mt-1">مؤرشف: ${c.archivedAt ? new Date(c.archivedAt).toLocaleString("ar-IQ") : "-"}</p>
+        </div>
+        <button class="chip !text-[10px] !px-3 !py-2 border-blue-500/60"
+                data-action="restore" data-id="${esc(c.id)}">استعادة ✅</button>
+      </div>
+    `).join("");
+  }
+
+  /* -------- Global Event Wiring -------- */
+
+  function bindEvents(){
+    // Nav
+    $("topNav").addEventListener("click", (e) => {
+      const btn = e.target.closest("[data-sec]");
+      if (!btn) return;
+      showSection(btn.dataset.sec);
+      vibrate(8);
+    });
+
+    // home "go list"
+    document.addEventListener("click", (e) => {
+      const go = e.target.closest("[data-go]");
+      if (!go) return;
+      const to = go.dataset.go;
+      if (to === "list") showSection("list");
+    });
+
+    // FAB
+    $("fabAdd").addEventListener("click", () => {
+      showSection("add");
+      vibrate(10);
+    });
+
+    // Service custom
+    $("service-select").addEventListener("change", () => {
+      syncCustomServiceUI();
+      vibrate(8);
+    });
+
+    // Dur buttons
+    $("durBtns").addEventListener("click", (e) => {
+      const b = e.target.closest("[data-days]");
+      if (!b) return;
+      setTypeByDuration(b.dataset.days, b.dataset.type);
+      vibrate(8);
+    });
+
+    // Paid toggle (Add)
+    $("p-true").addEventListener("click", () => { setPaidState(true); vibrate(8); });
+    $("p-false").addEventListener("click", () => { setPaidState(false); vibrate(8); });
+
+    // Save buttons
+    $("mainBtn").addEventListener("click", () => saveData({openReceipt:false}));
+    $("saveAndReceiptBtn").addEventListener("click", () => saveData({openReceipt:true}));
+
+    // Reset form
+    $("resetFormBtn").addEventListener("click", () => {
+      clearForm();
+      toast("تم تفريغ الحقول ✅", "ok");
+    });
+
+    // Search
+    $("search").addEventListener("input", () => renderList());
+
+    // Filters
+    $("typeFilters").addEventListener("click", (e) => {
+      const b = e.target.closest("[data-typefilter]");
+      if (!b) return;
+      state.typeFilter = b.dataset.typefilter;
+      [...$("typeFilters").querySelectorAll(".chip")].forEach(x => x.classList.toggle("active", x === b));
+      renderList();
+      vibrate(8);
+    });
+
+    $("statusFilters").addEventListener("click", (e) => {
+      const b = e.target.closest("[data-status]");
+      if (!b) return;
+      state.statusFilter = b.dataset.status;
+      [...$("statusFilters").querySelectorAll(".chip")].forEach(x => x.classList.toggle("active", x === b));
+      renderList();
+      vibrate(8);
+    });
+
+    $("sortMode").addEventListener("change", () => renderList());
+    $("quickHomeBtn").addEventListener("click", () => showSection("home"));
+
+    // Main list actions (Event delegation)
+    $("main-list").addEventListener("click", (e) => {
+      const btn = e.target.closest("[data-action]");
+      if (!btn) return;
+
+      const id = btn.dataset.id;
+      const action = btn.dataset.action;
+
+      if (action === "receipt") return openReceiptById(id);
+      if (action === "renew") return openRenewModal(id);
+      if (action === "edit") return editUserById(id);
+      if (action === "archive") return archiveById(id);
+      if (action === "restore") return restoreById(id);
+      if (action === "toggleType") return toggleTypeById(id);
+      if (action === "remind"){
+        const c = state.clients.find(x => x.id === id);
+        if (!c) return;
+        const msg = `السلام عليكم ورحمة الله 😊\nباچر/قريباً يخلص اشتراكك ${c.type || ""} (${c.service}).\nتحب نجدد لك؟`;
+        const link = waUrl(c.phone, msg);
+        if (link === "#"){
+          toast("أضف رقم هاتف صحيح أولاً.", "warn");
+          return;
         }
-
-        function setPaidState(s) {
-            currentPaid = s;
-            el('p-true').style.background = s ? 'rgba(22, 163, 74, 0.4)' : '';
-            el('p-false').style.background = !s ? 'rgba(220, 38, 38, 0.4)' : '';
-        }
-
-        function saveData() {
-            const data = {
-                name: el('name').value,
-                price: Number(el('price').value),
-                phone: el('phone').value,
-                service: el('service-select').value,
-                insta: el('insta').value,
-                end: el('expDate').value,
-                paid: currentPaid,
-                type: currentType,
-                created: new Date().toISOString()
-            };
-            if(!data.name || !data.end) return alert("أكمل البيانات");
-            if(editIdx !== null) clients[editIdx] = {...clients[editIdx], ...data};
-            else clients.unshift(data);
-            localStorage.setItem(DB, JSON.stringify(clients));
-            location.reload();
-        }
-
-        function updateHome() {
-            const now = new Date();
-            const todayStr = now.toISOString().split('T')[0];
-            const tomorrow = new Date();
-            tomorrow.setDate(now.getDate() + 1);
-            const tomorrowStr = tomorrow.toISOString().split('T')[0];
-
-            // إحصائيات
-            let dSum = 0, wSum = 0, mSum = 0;
-            clients.forEach(c => {
-                const cDate = new Date(c.created || Date.now());
-                if(c.paid) {
-                    if(cDate.toDateString() === now.toDateString()) dSum += c.price;
-                    if((now - cDate)/(1000*60*60*24) <= 7) wSum += c.price;
-                    if(cDate.getMonth() === now.getMonth()) mSum += c.price;
-                }
-            });
-            el('stat-day').innerText = dSum.toLocaleString() + " د.ع";
-            el('stat-week').innerText = wSum.toLocaleString() + " د.ع";
-            el('stat-month').innerText = mSum.toLocaleString() + " د.ع";
-
-            // تذكيرات
-            const reminders = clients.filter(c => c.end === tomorrowStr && !contactedToday.includes(c.name + c.end));
-            el('remind-count').innerText = reminders.length;
-            el('reminder-list').innerHTML = reminders.map((c, i) => `
-                <div class="bg-slate-800/50 p-3 rounded-2xl flex justify-between items-center border-r-4 border-orange-500">
-                    <div>
-                        <p class="font-bold text-sm">${c.name}</p>
-                        <p class="text-[10px] text-slate-400">${c.service} (${c.type})</p>
-                    </div>
-                    <button onclick="remindUser('${c.name}', '${c.phone}', '${c.end}', '${c.type}')" class="bg-orange-600 px-4 py-2 rounded-xl text-xs font-black">تذكير 🔔</button>
-                </div>
-            `).join('');
-        }
-
-        function remindUser(name, phone, end, type) {
-            const msg = `السلام عليكم ورحمة الله، باچر يخلص الاشتراك ال${type} تجدد اشتراك؟ 😊`;
-            window.open(`https://wa.me/964${phone}?text=${encodeURIComponent(msg)}`);
-            contactedToday.push(name + end);
-            localStorage.setItem('NAS_CONTACTED', JSON.stringify(contactedToday));
-            updateHome();
-        }
-
-        function setListFilter(f) {
-            filter = f;
-            el('f-mon').style.borderColor = f === 'شهري' ? '#3b82f6' : '#334155';
-            el('f-year').style.borderColor = f === 'سنوي' ? '#3b82f6' : '#334155';
-            renderList();
-        }
-
-        function renderList() {
-            const q = el('search').value.toLowerCase();
-            const list = el('main-list');
-            list.innerHTML = "";
-            
-            clients.forEach((c, i) => {
-                if((c.type || 'شهري') === filter && c.name.toLowerCase().includes(q)) {
-                    const isExp = c.end < new Date().toISOString().split('T')[0];
-                    list.innerHTML += `
-                        <div class="glass p-4 rounded-3xl border-r-4 ${isExp ? 'border-red-600' : 'border-blue-500'}">
-                            <div class="flex justify-between mb-3">
-                                <div>
-                                    <h4 class="font-bold">${c.name}</h4>
-                                    <p class="text-[10px] text-blue-400">${c.service} • ${c.price.toLocaleString()} د.ع</p>
-                                </div>
-                                <div class="text-left">
-                                    <p class="text-[9px] text-slate-400">ينتهي: ${c.end}</p>
-                                    <button onclick="toggleType(${i})" class="text-[9px] bg-slate-700 px-2 py-1 rounded-md mt-1">🔄 تحويل إلى ${c.type === 'سنوي' ? 'شهري' : 'سنوي'}</button>
-                                </div>
-                            </div>
-                            <div class="flex gap-2">
-                                <button onclick="openReceipt(${i})" class="bg-white text-black text-[10px] font-bold px-3 py-1 rounded-lg">وصل</button>
-                                <button onclick="editUser(${i})" class="bg-slate-700 text-[10px] px-3 py-1 rounded-lg">تعديل</button>
-                                <a href="https://instagram.com/${c.insta}" class="bg-pink-600 p-1 px-2 rounded-lg"><img src="https://cdn-icons-png.flaticon.com/512/174/174855.png" class="w-4"></a>
-                                <button onclick="deleteUser(${i})" class="text-red-500 mr-auto">🗑️</button>
-                            </div>
-                        </div>
-                    `;
-                }
-            });
-        }
-
-        function toggleType(i) {
-            clients[i].type = clients[i].type === 'سنوي' ? 'شهري' : 'سنوي';
-            localStorage.setItem(DB, JSON.stringify(clients));
-            renderList();
-        }
-
-        function openReceipt(i) {
-            const c = clients[i];
-            el('rName').innerText = c.name;
-            el('rService').innerText = c.service;
-            el('rPrice').innerText = c.price.toLocaleString() + " د.ع";
-            el('rEnd').innerText = c.end;
-            el('receiptModal').classList.remove('hidden');
-        }
-
-        async function shareImage() {
-            const canvas = await html2canvas(el('printableReceipt'), {scale: 3});
-            canvas.toBlob(blob => {
-                const file = new File([blob], 'receipt.png', {type:'image/png'});
-                if(navigator.canShare && navigator.canShare({files:[file]})) navigator.share({files:[file]});
-                else { const a=document.createElement('a'); a.download='NAS.png'; a.href=canvas.toDataURL(); a.click(); }
-            });
-        }
-
-        function editUser(i) {
-            editIdx = i; const c = clients[i];
-            el('name').value = c.name; el('price').value = c.price; el('phone').value = c.phone;
-            el('insta').value = c.insta; el('expDate').value = c.end; el('service-select').value = c.service;
-            setPaidState(c.paid); currentType = c.type; showSection('add');
-            el('mainBtn').innerText = "🔄 تحديث البيانات";
-        }
-
-        function deleteUser(i) { if(confirm("حذف؟")) { clients.splice(i,1); localStorage.setItem(DB, JSON.stringify(clients)); renderList(); } }
-
-        // تشغيل البداية
+        window.open(link, "_blank");
+        markContacted(c);
+        toast("تم فتح واتساب + تسجيل التذكير ✅", "ok");
         updateHome();
-    </script>
+      }
+    });
+
+    // Reminder list actions (same container as main-list? هنا داخل home)
+    $("reminder-list").addEventListener("click", (e) => {
+      const btn = e.target.closest("[data-action]");
+      if (!btn) return;
+      const id = btn.dataset.id;
+      const action = btn.dataset.action;
+
+      if (action === "renew") return openRenewModal(id);
+      if (action === "remind"){
+        const c = state.clients.find(x => x.id === id);
+        if (!c) return;
+        const msg = `السلام عليكم 😊\nاشتراكك ${c.type || ""} (${c.service}) يخلص قريباً.\nتحب نجدد لك؟`;
+        const link = waUrl(c.phone, msg);
+        if (link === "#"){
+          toast("أضف رقم هاتف صحيح أولاً.", "warn");
+          return;
+        }
+        window.open(link, "_blank");
+        markContacted(c);
+        toast("تم فتح واتساب + تسجيل التذكير ✅", "ok");
+        updateHome();
+      }
+    });
+
+    // Receipt modal
+    $("closeReceiptBtn").addEventListener("click", () => $("receiptModal").classList.add("hidden"));
+    $("shareReceiptBtn").addEventListener("click", shareReceipt);
+
+    $("receiptModal").addEventListener("click", (e) => {
+      if (e.target === $("receiptModal")) $("receiptModal").classList.add("hidden");
+    });
+
+    // Renew modal
+    $("closeRenewBtn").addEventListener("click", () => $("renewModal").classList.add("hidden"));
+    $("renewModal").addEventListener("click", (e) => {
+      if (e.target === $("renewModal")) $("renewModal").classList.add("hidden");
+    });
+
+    $("renewMon").addEventListener("click", () => setRenewDays(30));
+    $("renewYear").addEventListener("click", () => setRenewDays(365));
+    $("renewPaidBtn").addEventListener("click", () => setRenewPaid(true));
+    $("renewDebtBtn").addEventListener("click", () => setRenewPaid(false));
+    $("confirmRenewBtn").addEventListener("click", confirmRenew);
+
+    // Tools
+    $("exportBtn").addEventListener("click", exportJSONFile);
+    $("exportCsvBtn").addEventListener("click", exportLedgerCSV);
+
+    $("importFile").addEventListener("change", (e) => {
+      const file = e.target.files && e.target.files[0];
+      if (!file) return;
+      importJSONFile(file);
+      e.target.value = "";
+    });
+
+    $("resetContactBtn").addEventListener("click", resetContactToday);
+    $("runRepairBtn").addEventListener("click", runRepair);
+
+    // Tools archive list restore
+    $("archive-list").addEventListener("click", (e) => {
+      const btn = e.target.closest("[data-action='restore']");
+      if (!btn) return;
+      restoreById(btn.dataset.id);
+    });
+
+    // Toast close
+    $("toastHost").addEventListener("click", (e) => {
+      const b = e.target.closest("[data-close-toast]");
+      if (!b) return;
+      const id = b.dataset.closeToast;
+      const node = $(id);
+      if (node) node.remove();
+    });
+
+    // ESC closes modals
+    document.addEventListener("keydown", (e) => {
+      if (e.key !== "Escape") return;
+      $("receiptModal").classList.add("hidden");
+      $("renewModal").classList.add("hidden");
+    });
+  }
+
+  /* -------- Init -------- */
+
+  function init(){
+    migrateClients();
+    migrateLedger();
+
+    state.contacted = loadContactStore();
+    // إذا التاريخ مو اليوم، راح يتصفّر تلقائياً داخل loadContactStore
+
+    // إعداد افتراضي لحقل التاريخ في الإضافة
+    $("expDate").value = addDaysToISO(isoDateLocal(new Date()), 30);
+
+    syncCustomServiceUI();
+    setPaidState(true);
+
+    bindEvents();
+    updateHome();
+    renderTools();
+    showSection("home");
+  }
+
+  init();
+</script>
+
 </body>
 </html>
