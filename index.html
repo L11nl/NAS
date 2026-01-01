@@ -2,7 +2,7 @@
 <html lang="ar" dir="rtl">
 <head>
     <meta charset="UTF-8">
-    <title>NAS | الإدارة الاحترافية V7.1</title>
+    <title>NAS | الإدارة الاحترافية V7.2</title>
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;900&display=swap" rel="stylesheet">
@@ -17,6 +17,7 @@
         .btn-duration:hover, .btn-duration.active { background: #3b82f6; color: white; border-color: #3b82f6; }
         .btn-paid { background: #16a34a; color: white; }
         .btn-unpaid { background: #dc2626; color: white; }
+        .stat-card { background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.1); padding: 10px; rounded: 15px; }
         #expNotice { animation: slideDown 0.5s ease-out; }
         @keyframes slideDown { from { transform: translateY(-100%); } to { transform: translateY(0); } }
     </style>
@@ -59,12 +60,12 @@
                 <div class="space-y-2 border-t border-slate-700/50 pt-3">
                     <label class="text-[10px] text-slate-400 uppercase font-bold pr-2">مدة الاشتراك:</label>
                     <div class="grid grid-cols-3 sm:grid-cols-6 gap-2" id="durationGrid">
-                        <button onclick="calcEnd(this, 7)" class="btn-duration p-2 rounded-lg">أسبوع</button>
-                        <button onclick="calcEnd(this, 30)" class="btn-duration p-2 rounded-lg">شهر</button>
-                        <button onclick="calcEnd(this, 60)" class="btn-duration p-2 rounded-lg">شهرين</button>
-                        <button onclick="calcEnd(this, 90)" class="btn-duration p-2 rounded-lg">3 أشهر</button>
-                        <button onclick="calcEnd(this, 180)" class="btn-duration p-2 rounded-lg">6 أشهر</button>
-                        <button onclick="calcEnd(this, 365)" class="btn-duration p-2 rounded-lg">سنة</button>
+                        <button onclick="calcEnd(this, 7, 'weekly')" class="btn-duration p-2 rounded-lg">أسبوع</button>
+                        <button onclick="calcEnd(this, 30, 'monthly')" class="btn-duration p-2 rounded-lg">شهر</button>
+                        <button onclick="calcEnd(this, 60, 'monthly')" class="btn-duration p-2 rounded-lg">شهرين</button>
+                        <button onclick="calcEnd(this, 90, 'monthly')" class="btn-duration p-2 rounded-lg">3 أشهر</button>
+                        <button onclick="calcEnd(this, 180, 'yearly')" class="btn-duration p-2 rounded-lg">6 أشهر</button>
+                        <button onclick="calcEnd(this, 365, 'yearly')" class="btn-duration p-2 rounded-lg">سنة</button>
                     </div>
                     <input type="date" id="expDate" class="input-field p-3 rounded-2xl w-full text-sm mt-1">
                 </div>
@@ -81,7 +82,32 @@
 
         <div id="viewList" class="hidden space-y-4">
             <input id="search" oninput="render()" class="input-field p-4 rounded-[1.5rem] w-full shadow-lg" placeholder="🔍 بحث بالاسم أو الرقم...">
+            
+            <div class="flex gap-2 overflow-x-auto pb-2">
+                <button onclick="filterType='all'; render();" class="bg-slate-800 px-4 py-2 rounded-xl text-[10px] whitespace-nowrap">الكل</button>
+                <button onclick="filterType='monthly'; render();" class="bg-blue-900/40 border border-blue-500/30 px-4 py-2 rounded-xl text-[10px] whitespace-nowrap">📅 اشتراكات شهرية</button>
+                <button onclick="filterType='yearly'; render();" class="bg-purple-900/40 border border-purple-500/30 px-4 py-2 rounded-xl text-[10px] whitespace-nowrap">🌟 اشتراكات سنوية</button>
+            </div>
+
             <div id="clientsList" class="space-y-4"></div>
+        </div>
+    </div>
+
+    <div id="statsModal" class="fixed inset-0 bg-black/90 hidden z-50 flex items-center justify-center p-6">
+        <div class="glass w-full max-w-sm p-6 rounded-[2.5rem] border-blue-500/20 overflow-y-auto max-h-[90vh]">
+            <h2 class="text-xl font-black mb-4 text-center text-blue-400">📊 التقارير المالية</h2>
+            
+            <div class="grid grid-cols-4 gap-1 mb-6 bg-slate-800 p-1 rounded-xl">
+                <button onclick="showStatPeriod('day')" id="btnStatDay" class="text-[10px] p-2 rounded-lg bg-blue-600">يومي</button>
+                <button onclick="showStatPeriod('week')" id="btnStatWeek" class="text-[10px] p-2 rounded-lg">أسبوع</button>
+                <button onclick="showStatPeriod('month')" id="btnStatMonth" class="text-[10px] p-2 rounded-lg">شهر</button>
+                <button onclick="showStatPeriod('all')" id="btnStatAll" class="text-[10px] p-2 rounded-lg">الكل</button>
+            </div>
+
+            <div id="statsContent" class="space-y-3">
+                </div>
+
+            <button onclick="el('statsModal').classList.add('hidden')" class="mt-6 w-full bg-slate-700 p-3 rounded-2xl font-bold text-sm">إغلاق</button>
         </div>
     </div>
 
@@ -105,31 +131,10 @@
                 </div>
             </div>
             <div class="grid grid-cols-2 gap-2 mt-4">
-                <button onclick="shareReceiptImage()" class="bg-blue-600 text-white p-3 rounded-2xl font-bold text-xs">📤 مشاركة الصورة</button>
-                <button onclick="shareReceiptText()" class="bg-green-600 text-white p-3 rounded-2xl font-bold text-xs">💬 إرسال نص</button>
+                <button onclick="shareReceiptImage()" class="bg-blue-600 text-white p-3 rounded-2xl font-bold text-xs">📤 صورة</button>
+                <button onclick="shareReceiptText()" class="bg-green-600 text-white p-3 rounded-2xl font-bold text-xs">💬 نص</button>
                 <button onclick="el('receiptModal').classList.add('hidden')" class="col-span-2 text-slate-400 text-xs py-2">إغلاق</button>
             </div>
-        </div>
-    </div>
-
-    <div id="statsModal" class="fixed inset-0 bg-black/90 hidden z-50 flex items-center justify-center p-6">
-        <div class="glass w-full max-w-sm p-8 rounded-[2.5rem] text-center border-blue-500/20">
-            <h2 class="text-2xl font-black mb-6 text-blue-400">📊 ملخص الحسابات</h2>
-            <div class="space-y-3">
-                <div class="bg-green-500/10 p-4 rounded-2xl border border-green-500/20 flex justify-between items-center">
-                    <span class="text-xs text-green-400 font-bold">المستلم:</span>
-                    <span id="statPaid" class="font-black text-white"></span>
-                </div>
-                <div class="bg-red-500/10 p-4 rounded-2xl border border-red-500/20 flex justify-between items-center">
-                    <span class="text-xs text-red-400 font-bold">الديون:</span>
-                    <span id="statUnpaid" class="font-black text-white"></span>
-                </div>
-                <div class="bg-blue-500/10 p-4 rounded-2xl border border-blue-500/20 flex justify-between items-center">
-                    <span class="text-xs text-blue-400 font-bold">إجمالي الزبائن:</span>
-                    <span id="statCount" class="font-black text-white"></span>
-                </div>
-            </div>
-            <button onclick="el('statsModal').classList.add('hidden')" class="mt-6 w-full bg-slate-700 p-3 rounded-2xl font-bold text-sm">إغلاق</button>
         </div>
     </div>
 
@@ -140,6 +145,8 @@
         let selectedPaid = null;
         let editIndex = null;
         let currentR = null;
+        let selectedDurationType = "monthly"; // افتراضي
+        let filterType = "all";
 
         const el = (id) => document.getElementById(id);
 
@@ -167,9 +174,10 @@
             }
         }
 
-        function calcEnd(btn, days) {
+        function calcEnd(btn, days, type) {
             document.querySelectorAll('#durationGrid button').forEach(b => b.classList.remove('active'));
             btn.classList.add('active');
+            selectedDurationType = type;
             const d = new Date();
             d.setDate(d.getDate() + days);
             el('expDate').value = d.toISOString().split('T')[0];
@@ -189,10 +197,12 @@
                 insta: el('insta').value.trim().replace('@', ''),
                 service: selectedService === "CUSTOM" ? el('customService').value : selectedService,
                 end: el('expDate').value,
-                paid: selectedPaid
+                paid: selectedPaid,
+                created: new Date().toISOString(), // للتقارير المالية
+                type: selectedDurationType // شهري او سنوي
             };
             if(!data.name || !data.service || !data.end || selectedPaid === null) return alert("⚠️ أكمل البيانات وحالة الدفع");
-            if(editIndex !== null) clients[editIndex] = data;
+            if(editIndex !== null) clients[editIndex] = { ...clients[editIndex], ...data };
             else clients.unshift(data);
             localStorage.setItem(STORAGE_KEY, JSON.stringify(clients));
             location.reload();
@@ -202,32 +212,43 @@
             const q = el('search').value.toLowerCase();
             const list = el('clientsList');
             list.innerHTML = "";
-            const now = new Date().toISOString().split('T')[0];
+            const today = new Date();
+            const tomorrow = new Date();
+            tomorrow.setDate(today.getDate() + 1);
+            
+            const todayStr = today.toISOString().split('T')[0];
+            const tomorrowStr = tomorrow.toISOString().split('T')[0];
 
             clients.forEach((c, i) => {
-                if(c.name.toLowerCase().includes(q) || c.phone.includes(q)) {
-                    const isExp = c.end < now;
+                const isMatchSearch = c.name.toLowerCase().includes(q) || c.phone.includes(q);
+                const isMatchType = filterType === 'all' || (c.type === filterType);
+
+                if(isMatchSearch && isMatchType) {
+                    const isExp = c.end < todayStr;
+                    const isExpSoon = c.end === tomorrowStr; // هل ينتهي غداً؟
+
                     list.innerHTML += `
                         <div class="glass p-5 rounded-[2rem] border-r-4 ${isExp ? 'border-red-600 bg-red-900/10' : (c.paid ? 'border-green-500' : 'border-red-400')}">
                             <div class="flex justify-between items-start">
                                 <div>
                                     <div class="flex items-center gap-2">
                                         <h3 class="font-black text-lg text-white">${c.name}</h3>
-                                        ${c.insta ? `<a href="https://instagram.com/${c.insta}" target="_blank" class="text-pink-500"><svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 1.366.062 2.633.332 3.608 1.308.975.975 1.247 2.242 1.308 3.607.058 1.266.07 1.646.07 4.85s-.012 3.584-.07 4.85c-.062 1.366-.332 2.633-1.308 3.608-.975.975-2.242 1.247-3.607 1.308-1.266.058-1.646.07-4.85.07s-3.584-.012-4.85-.07c-1.366-.062-2.633-.332-3.608-1.308-.975-.975-1.247-2.242-1.308-3.607-.058-1.266-.07-1.646-.07-4.85s.012-3.584.07-4.85c.062-1.366.332-2.633 1.308-3.608.975-.975 2.242-1.247 3.607-1.308 1.266-.058 1.646-.07 4.85-.07zM12 0C8.741 0 8.333.014 7.053.072 2.695.272.273 2.69.073 7.052.014 8.333 0 8.741 0 12c0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.668-.072-4.948-.197-4.354-2.617-6.78-6.979-6.98C15.668.014 15.259 0 12 0zm0 5.838a6.162 6.162 0 100 12.324 6.162 6.162 0 000-12.324zM12 16a4 4 0 110-8 4 4 0 010 8zm6.406-11.845a1.44 1.44 0 100 2.881 1.44 1.44 0 000-2.881z"/></svg></a>` : ''}
+                                        <span class="text-[8px] bg-slate-700 px-2 rounded-full">${c.type === 'yearly' ? '⭐ سنوي' : '📅 شهري'}</span>
                                     </div>
                                     <p class="text-[10px] font-bold text-blue-400">${c.service} • ${c.price.toLocaleString()} د.ع</p>
                                 </div>
                                 <div class="text-left flex flex-col items-end">
                                     <span class="text-[8px] text-slate-400 mb-1">ينتهي: ${c.end}</span>
-                                    <span class="text-[10px] font-black uppercase px-2 py-1 rounded-md ${isExp ? 'bg-red-600 text-white animate-pulse' : 'bg-slate-700 text-slate-300'}">
-                                        ${isExp ? '⚠️ انتهى اشتراكه' : 'نشط'}
+                                    <span class="text-[10px] font-black uppercase px-2 py-1 rounded-md ${isExp ? 'bg-red-600 text-white animate-pulse' : (isExpSoon ? 'bg-orange-500 text-white' : 'bg-slate-700 text-slate-300')}">
+                                        ${isExp ? '⚠️ منتهي' : (isExpSoon ? 'ينتهي غداً' : 'نشط')}
                                     </span>
                                 </div>
                             </div>
-                            <div class="flex gap-2 mt-4 pt-4 border-t border-white/5">
-                                <button onclick="openReceipt(${i})" class="bg-white text-black font-bold p-2 px-5 rounded-xl text-[10px]">وصل 📄</button>
-                                <button onclick="editClient(${i})" class="bg-slate-700 p-2 px-5 rounded-xl text-[10px]">تعديل</button>
-                                <a href="https://wa.me/964${c.phone}" target="_blank" class="mr-auto bg-green-600 p-2 px-5 rounded-xl text-[10px] font-bold">واتساب</a>
+                            <div class="flex gap-2 mt-4 pt-4 border-t border-white/5 overflow-x-auto">
+                                <button onclick="openReceipt(${i})" class="bg-white text-black font-bold p-2 px-4 rounded-xl text-[10px] whitespace-nowrap">وصل 📄</button>
+                                <button onclick="editClient(${i})" class="bg-slate-700 p-2 px-4 rounded-xl text-[10px]">تعديل</button>
+                                ${isExpSoon ? `<button onclick="remindClient(${i})" class="bg-orange-600 p-2 px-4 rounded-xl text-[10px] font-black">تذكير 🔔</button>` : ''}
+                                <a href="https://wa.me/964${c.phone}" target="_blank" class="mr-auto bg-green-600 p-2 px-4 rounded-xl text-[10px] font-bold">واتساب</a>
                                 <button onclick="deleteClient(${i})" class="text-red-500 mr-2">🗑️</button>
                             </div>
                         </div>
@@ -236,14 +257,63 @@
             });
         }
 
+        function remindClient(i) {
+            const c = clients[i];
+            const msg = `مرحباً أستاذ ${c.name} 🌹%0Aنود تذكيرك بأن اشتراكك في خدمة (${c.service}) سينتهي غداً ${c.end}.%0Aهل ترغب في تجديد الاشتراك معنا؟ 😊`;
+            window.open(`https://wa.me/964${c.phone}?text=${msg}`, '_blank');
+        }
+
+        // إحصائيات متطورة
+        function showStatPeriod(period) {
+            const now = new Date();
+            let filtered = clients;
+            
+            if(period !== 'all') {
+                filtered = clients.filter(c => {
+                    const cDate = new Date(c.created || Date.now());
+                    if(period === 'day') return cDate.toDateString() === now.toDateString();
+                    if(period === 'week') {
+                        const weekAgo = new Date(); weekAgo.setDate(now.getDate() - 7);
+                        return cDate >= weekAgo;
+                    }
+                    if(period === 'month') return cDate.getMonth() === now.getMonth() && cDate.getFullYear() === now.getFullYear();
+                });
+            }
+
+            document.querySelectorAll('#statsModal button').forEach(b => b.classList.remove('bg-blue-600'));
+            el('btnStat' + period.charAt(0).toUpperCase() + period.slice(1)).classList.add('bg-blue-600');
+
+            let paid = 0, debt = 0;
+            filtered.forEach(c => c.paid ? paid += c.price : debt += c.price);
+
+            el('statsContent').innerHTML = `
+                <div class="stat-card border-green-500/30">
+                    <p class="text-[10px] text-green-400">كاش مستلم</p>
+                    <p class="text-xl font-black">${paid.toLocaleString()} د.ع</p>
+                </div>
+                <div class="stat-card border-red-500/30">
+                    <p class="text-[10px] text-red-400">ديون معلقة</p>
+                    <p class="text-xl font-black">${debt.toLocaleString()} د.ع</p>
+                </div>
+                <div class="stat-card border-blue-500/30">
+                    <p class="text-[10px] text-blue-400">عدد المشتركين في هذه الفترة</p>
+                    <p class="text-xl font-black">${filtered.length}</p>
+                </div>
+            `;
+        }
+
+        function openStats() {
+            showStatPeriod('all');
+            el('statsModal').classList.remove('hidden');
+        }
+
+        // الوظائف المساعدة القديمة (بدون تعديل)
         async function shareReceiptImage() {
             const canvas = await html2canvas(el('printableReceipt'), { scale: 3 });
             canvas.toBlob(async (blob) => {
                 const file = new File([blob], `NAS-${currentR.name}.png`, { type: 'image/png' });
                 if (navigator.canShare && navigator.canShare({ files: [file] })) {
-                    try {
-                        await navigator.share({ files: [file], title: 'وصل NAS', text: `وصل الزبون ${currentR.name}` });
-                    } catch (err) { downloadFile(canvas); }
+                    try { await navigator.share({ files: [file], title: 'وصل NAS' }); } catch (err) { downloadFile(canvas); }
                 } else { downloadFile(canvas); }
             });
         }
@@ -253,15 +323,6 @@
             a.download = `NAS-${currentR.name}.png`;
             a.href = canvas.toDataURL();
             a.click();
-        }
-
-        function checkExpirations() {
-            const now = new Date().toISOString().split('T')[0];
-            const expired = clients.filter(c => c.end < now);
-            if(expired.length > 0) {
-                el('expNotice').classList.remove('hidden');
-                el('expMsg').innerHTML = `⚠️ انتهى اشتراك: <span class="text-[10px] font-black">${expired.map(e => e.name).join(' ، ')}</span>`;
-            }
         }
 
         function openReceipt(i) {
@@ -277,24 +338,27 @@
         }
 
         function shareReceiptText() {
-            const txt = `📦 وصل اشتراك NAS\n------------------\n👤 الزبون: ${currentR.name}\n✨ الخدمة: ${currentR.service}\n💰 السعر: ${currentR.price.toLocaleString()} د.ع\n⌛ ينتهي: ${currentR.end}\n✅ الحالة: ${currentR.paid ? 'مدفوع' : 'دين'}\n------------------\n📸 انستقرام: L11NL`;
+            const txt = `📦 وصل اشتراك NAS\n👤 الزبون: ${currentR.name}\n✨ الخدمة: ${currentR.service}\n💰 السعر: ${currentR.price.toLocaleString()} د.ع\n⌛ ينتهي: ${currentR.end}\n✅ الحالة: ${currentR.paid ? 'مدفوع' : 'دين'}`;
             navigator.share ? navigator.share({ text: txt }) : (navigator.clipboard.writeText(txt), alert("تم نسخ النص"));
-        }
-
-        function openStats() {
-            let p = 0, u = 0;
-            clients.forEach(c => c.paid ? p += c.price : u += c.price);
-            el('statPaid').textContent = p.toLocaleString() + " د.ع"; el('statUnpaid').textContent = u.toLocaleString() + " د.ع"; el('statCount').textContent = clients.length;
-            el('statsModal').classList.remove('hidden');
         }
 
         function editClient(i) {
             editIndex = i; const c = clients[i];
             el('name').value = c.name; el('price').value = c.price; el('phone').value = c.phone; el('insta').value = c.insta; el('expDate').value = c.end;
+            selectedDurationType = c.type || 'monthly';
             setPaid(c.paid); showTab('add'); el('mainBtn').textContent = "🔄 تحديث بيانات المشترك";
         }
 
         function deleteClient(i) { if(confirm("🗑️ حذف هذا المشترك؟")) { clients.splice(i, 1); localStorage.setItem(STORAGE_KEY, JSON.stringify(clients)); render(); } }
+
+        function checkExpirations() {
+            const now = new Date().toISOString().split('T')[0];
+            const expired = clients.filter(c => c.end < now);
+            if(expired.length > 0) {
+                el('expNotice').classList.remove('hidden');
+                el('expMsg').innerHTML = `⚠️ انتهى اشتراك: <span class="text-[10px] font-black">${expired.map(e => e.name).slice(0,3).join(' ، ')}...</span>`;
+            }
+        }
 
         checkExpirations(); render();
     </script>
