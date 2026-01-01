@@ -2,7 +2,7 @@
 <html lang="ar" dir="rtl">
 <head>
   <meta charset="UTF-8" />
-  <title>NAS | الإدارة المبسطة V8.4</title>
+  <title>NAS | الإدارة المبسطة V8.5</title>
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <meta name="theme-color" content="#0b1120" />
 
@@ -29,7 +29,6 @@
       --red:#ef4444;
       --orange:#f59e0b;
 
-      /* أبيض لكن غير ساطع */
       --receipt:#f6f7fb;
     }
 
@@ -113,6 +112,20 @@
     }
     .icon-btn:active{ transform: scale(.96); }
 
+    .badge{
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      padding: 6px 10px;
+      border-radius: 999px;
+      font-size: 10px;
+      font-weight: 900;
+      border: 1px solid rgba(148,163,184,.22);
+      background: rgba(15,23,42,.40);
+      line-height: 1;
+      user-select:none;
+    }
+
     .section-enter{ animation: fadeUp .22s ease-out; }
     @keyframes fadeUp{ from{transform:translateY(10px);opacity:0} to{transform:translateY(0);opacity:1} }
 
@@ -139,7 +152,7 @@
         <div class="flex items-start justify-between gap-3">
           <div>
             <h1 class="text-3xl font-black text-blue-400 leading-tight">NAS</h1>
-            <p class="text-xs text-slate-400 font-bold">V8.4 • مبسط</p>
+            <p class="text-xs text-slate-400 font-bold">V8.5 • مبسط</p>
           </div>
           <div class="text-left">
             <p class="text-[10px] text-slate-400 font-black">اليوم</p>
@@ -241,7 +254,7 @@
 
         <div class="grid grid-cols-2 gap-2">
           <button id="p-true" class="chip active border-green-500/60" data-haptic>✅ مدفوع</button>
-          <button id="p-false" class="chip border-red-500/60" data-haptic>❌ دين</button>
+          <button id="p-false" class="chip border-red-500/60" data-haptic>❌ غير مدفوع</button>
         </div>
 
         <div class="flex items-center justify-between mini">
@@ -268,7 +281,15 @@
 
         <input id="search" class="input-field" placeholder="بحث: الاسم / الرقم / الخدمة / الانستا ...">
 
+        <!-- ✅ إضافة “خانة” سنوي/شهري (تبويبات سريعة) -->
+        <div id="typeTabs" class="grid grid-cols-3 gap-2">
+          <button id="tabAll"  class="chip active" data-type-tab="الكل" data-haptic>✨ الكل</button>
+          <button id="tabMon"  class="chip" data-type-tab="شهري" data-haptic>📅 شهري</button>
+          <button id="tabYear" class="chip" data-type-tab="سنوي" data-haptic>🌟 سنوي</button>
+        </div>
+
         <div class="grid grid-cols-2 gap-2">
+          <!-- تبقى كما هي -->
           <select id="typeFilter" class="input-field">
             <option value="الكل">النوع: الكل</option>
             <option value="شهري">النوع: شهري</option>
@@ -278,7 +299,7 @@
           <select id="statusFilter" class="input-field">
             <option value="all">الحالة: الكل</option>
             <option value="paid">الحالة: مدفوع</option>
-            <option value="debt">الحالة: دين</option>
+            <option value="debt">الحالة: غير مدفوع</option>
             <option value="due7">الحالة: قريب</option>
             <option value="expired">الحالة: منتهي</option>
             <option value="trash">🗑️ سلة المهملات</option>
@@ -316,7 +337,6 @@
         </div>
 
         <div class="mt-4 flex items-center justify-between gap-3">
-          <!-- المطلوب: عنوان + سهم للـ QR + QR يقرأ رابط انستغرام -->
           <div class="min-w-0 text-center">
             <p class="text-[10px] font-black text-slate-700">حسابنا على انستغرام</p>
             <p class="text-[14px] font-black text-slate-700 leading-none">⬇️</p>
@@ -329,7 +349,6 @@
             <p class="text-[9px] font-black text-slate-600 mt-1">@l11nl</p>
           </div>
 
-          <!-- المطلوب: أيقونة انستغرام ثم L11NL -->
           <div class="flex items-center justify-center gap-2 opacity-70">
             <svg width="18" height="18" viewBox="0 0 24 24" aria-hidden="true">
               <path fill="#111827" d="M7 2h10a5 5 0 0 1 5 5v10a5 5 0 0 1-5 5H7a5 5 0 0 1-5-5V7a5 5 0 0 1 5-5zm10 2H7a3 3 0 0 0-3 3v10a3 3 0 0 0 3 3h10a3 3 0 0 0 3-3V7a3 3 0 0 0-3-3zm-5 4a5 5 0 1 1 0 10a5 5 0 0 1 0-10zm0 2a3 3 0 1 0 0 6a3 3 0 0 0 0-6zm5.25-2.1a1.1 1.1 0 1 1 0 2.2a1.1 1.1 0 0 1 0-2.2z"/>
@@ -372,7 +391,7 @@
 
       <div class="grid grid-cols-2 gap-2">
         <button id="renewPaidBtn" class="chip active border-green-500/60" data-haptic>✅ مدفوع</button>
-        <button id="renewDebtBtn" class="chip border-red-500/60" data-haptic>❌ دين</button>
+        <button id="renewDebtBtn" class="chip border-red-500/60" data-haptic>❌ غير مدفوع</button>
       </div>
 
       <button id="confirmRenewBtn" class="w-full bg-orange-600 hover:bg-orange-500 p-4 rounded-2xl font-black shadow-lg" data-haptic>
@@ -417,15 +436,16 @@
 
 <script>
 /* =========================
-   NAS V8.4 Lite (Integrated Fix)
+   NAS V8.5 Lite
+   - Fix stats
+   - Add yearly tab
+   - Show paid/unpaid + type on each card
    ========================= */
 
-  // ✅ لا تغيّر هذا المفتاح: يحافظ على المشتركين القدامى
   const DB = "NAS_STABLE_V5_DATA";
   const LEDGER_KEY = "NAS_LEDGER_V1";
   const CONTACT_KEY = "NAS_CONTACTED";
 
-  // ✅ QR المطلوب: رابط انستغرام حسابكم
   const OUR_IG_QR_URL = "https://www.instagram.com/l11nl?igsh=YnF0bTU4MXAyamZ3";
 
   const $ = (id) => document.getElementById(id);
@@ -449,7 +469,6 @@
     qrReady: false,
   };
 
-  /* ✅ رجّاج (هزّة) */
   function vibrate(ms=12){
     try{ if (navigator.vibrate) navigator.vibrate(ms); }catch(e){}
   }
@@ -560,9 +579,7 @@
     const today = isoDateLocal(new Date());
     const raw = loadJSON(CONTACT_KEY, null);
 
-    // legacy array
     if (Array.isArray(raw)){
-      // ✅ نخليها مثل ما هي، لكن نلفها بكونتينر حتى ما تخرب
       const obj = { date: today, keys: raw };
       saveJSON(CONTACT_KEY, obj);
       return obj;
@@ -571,8 +588,6 @@
     if (raw && typeof raw === "object"){
       const date = raw.date || today;
       const keys = Array.isArray(raw.keys) ? raw.keys : [];
-      // إذا تحب “تذكير يومي فقط” غيّر هذا: (date !== today) => reset
-      // حالياً نخليه مثل قبل: ماكو reset يومي، فقط لنفس end
       return { date, keys };
     }
 
@@ -583,7 +598,6 @@
 
   function saveContactStore(){ saveJSON(CONTACT_KEY, state.contacted); }
 
-  /* Data Migration (يحافظ على القدامى) */
   function migrateClients(){
     let clients = loadJSON(DB, []);
     if (!Array.isArray(clients)) clients = [];
@@ -592,7 +606,7 @@
 
     state.clients = clients.map((c) => {
       const obj = (c && typeof c==="object") ? c : {};
-      const deleted = (typeof obj.deleted === "boolean") ? obj.deleted : !!obj.archived; // لو أرشيف قديم
+      const deleted = (typeof obj.deleted === "boolean") ? obj.deleted : !!obj.archived;
       return {
         ...obj,
         id: obj.id || obj.uuid || obj._id || uid(),
@@ -648,26 +662,35 @@
     if (sec==="list") renderList();
   }
 
-  /* Stats */
+  /* =========================
+     ✅ FIX: الإحصائيات تقرأ من المشتركين (وليس من ledger)
+     - اليوم = حسب created اليوم
+     - الشهر = حسب created هذا الشهر
+     ========================= */
   function computeStats(){
     const now = new Date();
-    const today = isoDateLocal(now);
+    const todayStr = isoDateLocal(now);
     const month = now.getMonth();
     const year = now.getFullYear();
 
     let dP=0,dD=0,mP=0,mD=0;
-    state.ledger.forEach(tx=>{
-      const at = new Date(tx.at || Date.now());
-      const day = isoDateLocal(at);
-      if (day === today){
-        if (tx.paid) dP += Number(tx.price)||0;
-        else dD += Number(tx.price)||0;
-      }
-      if (at.getMonth()===month && at.getFullYear()===year){
-        if (tx.paid) mP += Number(tx.price)||0;
-        else mD += Number(tx.price)||0;
-      }
-    });
+
+    state.clients
+      .filter(c => !c.deleted)
+      .forEach(c=>{
+        const created = new Date(c.created || Date.now());
+        const createdDay = isoDateLocal(created);
+
+        if (createdDay === todayStr){
+          if (c.paid) dP += Number(c.price)||0;
+          else dD += Number(c.price)||0;
+        }
+
+        if (created.getMonth() === month && created.getFullYear() === year){
+          if (c.paid) mP += Number(c.price)||0;
+          else mD += Number(c.price)||0;
+        }
+      });
 
     const totalDebt = state.clients
       .filter(c => !c.deleted)
@@ -703,9 +726,7 @@
     renderReminders();
   }
 
-  /* ✅ إصلاح التذكير: صار يعتمد على daysLeft حتى لو أكو فرق يوم */
   function renderReminders(){
-    // نعرض: أمس/اليوم/باچر فقط حتى ما يصير زحمة (ويعالج فرق يوم)
     const items = state.clients
       .filter(c => !c.deleted)
       .map(c => ({ c, dl: daysLeft(c.end) }))
@@ -761,7 +782,6 @@
     }
   }
 
-  /* Add/Edit */
   function syncCustomServiceUI(){
     $("customServiceWrap").classList.toggle("hidden", $("service-select").value !== "CUSTOM");
   }
@@ -909,7 +929,6 @@
     vibrate(10);
   }
 
-  /* Trash */
   function moveToTrash(id){
     const idx = state.clients.findIndex(c=>c.id===id);
     if (idx===-1) return;
@@ -949,14 +968,23 @@
     renderList(); updateHome();
   }
 
-  /* List */
   function endValue(c){ return c.end ? c.end : "9999-12-31"; }
+
+  /* ✅ جديد: مزامنة التبويبات السريعة مع select */
+  function syncTypeTabs(){
+    const v = $("typeFilter").value;
+    $("tabAll").classList.toggle("active", v === "الكل");
+    $("tabMon").classList.toggle("active", v === "شهري");
+    $("tabYear").classList.toggle("active", v === "سنوي");
+  }
 
   function renderList(){
     const q = ($("search").value||"").toLowerCase().trim();
     const typeFilter = $("typeFilter").value;
     const statusFilter = $("statusFilter").value;
     const sortMode = $("sortMode").value;
+
+    syncTypeTabs();
 
     let arr = state.clients.slice();
 
@@ -1004,7 +1032,14 @@
                   : dl<0 ? "border-red-600"
                   : (!c.paid ? "border-red-400" : (dl<=7 ? "border-orange-500" : "border-green-500"));
 
-      const badge = c.deleted ? "🗑️ سلة" : (dl<0 ? "منتهي" : (dl<=7 ? "قريب" : "فعّال"));
+      const statusText = c.deleted ? "🗑️ سلة" : (dl<0 ? "⚠️ منتهي" : (dl<=7 ? "⏳ قريب" : "✅ فعّال"));
+      const statusClass = dl<0 ? "text-red-200" : (dl<=7 ? "text-orange-200" : "text-emerald-200");
+
+      const paidText = c.paid ? "✅ مدفوع" : "❌ غير مدفوع";
+      const paidClass = c.paid ? "text-emerald-200" : "text-red-200";
+
+      const typeText = (c.type||"شهري") === "سنوي" ? "🌟 سنوي" : "📅 شهري";
+      const typeClass = (c.type||"شهري") === "سنوي" ? "text-blue-200" : "text-slate-200";
 
       const phoneOk = !!normalizePhone(c.phone);
       const instaOk = !!normalizeInsta(c.insta);
@@ -1018,11 +1053,16 @@
             <div class="min-w-0">
               <p class="text-sm font-black truncate">${esc(c.name)}</p>
               <p class="text-[10px] text-blue-300 font-black truncate">${esc(c.service)} • ${formatMoney(c.price)} د.ع</p>
-              <p class="text-[10px] text-slate-400 font-bold mt-1">ينتهي: ${esc(c.end||"-")} • ${esc(c.type||"شهري")}</p>
-              <p class="text-[10px] font-black mt-1 ${c.deleted ? "text-red-300" : "text-slate-300"}">${esc(badge)}</p>
+              <p class="text-[10px] text-slate-400 font-bold mt-1">ينتهي: ${esc(c.end||"-")}</p>
+
+              <!-- ✅ جديد: مدفوع/غير + شهري/سنوي + الحالة -->
+              <div class="flex flex-wrap gap-2 mt-2">
+                <span class="badge ${paidClass}">${paidText}</span>
+                <span class="badge ${typeClass}">${typeText}</span>
+                <span class="badge ${statusClass}">${statusText}</span>
+              </div>
             </div>
 
-            <!-- ✅ رجّعنا واتساب + انستغرام الزبون -->
             <div class="flex flex-col gap-2 items-end">
               <div class="flex gap-2">
                 <a href="${wa}" target="_blank" rel="noopener"
@@ -1030,7 +1070,6 @@
                    title="${phoneOk ? "واتساب" : "أضف رقم هاتف"}"
                    ${phoneOk ? "" : 'onclick="return false;" style="opacity:.40; cursor:not-allowed;"'}
                    data-haptic>
-                  <!-- WhatsApp SVG -->
                   <svg width="18" height="18" viewBox="0 0 24 24" aria-hidden="true">
                     <path fill="#fff" d="M12 2a10 10 0 0 0-8.6 15.1L2 22l5-1.3A10 10 0 1 0 12 2zm0 18a8 8 0 0 1-4.1-1.1l-.3-.2-2.9.7.8-2.8-.2-.3A8 8 0 1 1 12 20zm4.4-5.6c-.2-.1-1.2-.6-1.4-.7-.2-.1-.3-.1-.5.1l-.6.7c-.1.2-.2.2-.4.1-1.2-.6-2-1.1-2.8-2.5-.2-.2 0-.4.1-.5l.4-.5c.1-.1.1-.2.2-.4.1-.1 0-.3 0-.4l-.7-1.6c-.2-.4-.4-.3-.5-.3h-.4c-.1 0-.4.1-.6.3-.2.2-.8.7-.8 1.8s.8 2.1.9 2.2c.1.1 1.6 2.5 3.9 3.5.5.2.9.4 1.2.5.5.1.9.1 1.2.1.4-.1 1.2-.5 1.4-1 .2-.5.2-.9.1-1z"/>
                   </svg>
@@ -1041,7 +1080,6 @@
                    title="${instaOk ? "انستغرام الزبون" : "أضف يوزر انستغرام"}"
                    ${instaOk ? "" : 'onclick="return false;" style="opacity:.40; cursor:not-allowed;"'}
                    data-haptic>
-                  <!-- Instagram SVG -->
                   <svg width="18" height="18" viewBox="0 0 24 24" aria-hidden="true">
                     <path fill="#fff" d="M7 2h10a5 5 0 0 1 5 5v10a5 5 0 0 1-5 5H7a5 5 0 0 1-5-5V7a5 5 0 0 1 5-5zm10 2H7a3 3 0 0 0-3 3v10a3 3 0 0 0 3 3h10a3 3 0 0 0 3-3V7a3 3 0 0 0-3-3zm-5 4a5 5 0 1 1 0 10a5 5 0 0 1 0-10zm0 2a3 3 0 1 0 0 6a3 3 0 0 0 0-6zm5.25-2.1a1.1 1.1 0 1 1 0 2.2a1.1 1.1 0 0 1 0-2.2z"/>
                   </svg>
@@ -1057,7 +1095,6 @@
     }).join("");
   }
 
-  /* Sheet */
   function openSheet(id){
     state.sheetId = id;
     const c = state.clients.find(x=>x.id===id);
@@ -1089,7 +1126,6 @@
     renderList(); updateHome();
   }
 
-  /* Receipt + QR ثابت */
   function renderOurQR(){
     state.qrReady = false;
 
@@ -1130,23 +1166,20 @@
     $("rName").innerText = c.name || "-";
     $("rService").innerText = c.service || "-";
     $("rPrice").innerText = formatMoney(c.price) + " د.ع";
-    $("rPaid").innerText = c.paid ? "مدفوع ✅" : "دين ❌";
+    $("rPaid").innerText = c.paid ? "مدفوع ✅" : "غير مدفوع ❌";
     $("rEnd").innerText = c.end || "-";
 
     $("receiptModal").classList.remove("hidden");
     vibrate(10);
 
-    // ✅ نرسم QR بعد فتح المودال لضمان ظهوره دائماً
     requestAnimationFrame(() => {
       renderOurQR();
-      // احتياط ثاني (للمتصفحات اللي تتأخر)
       setTimeout(renderOurQR, 120);
     });
   }
 
   async function shareReceipt(){
     try{
-      // ✅ لو ضغطت بسرعة، ننتظر قليل حتى يجهز QR
       if (!state.qrReady){
         await new Promise(r=>setTimeout(r, 180));
       }
@@ -1172,7 +1205,6 @@
     }
   }
 
-  /* Renew */
   function openRenewModal(id){
     const c = state.clients.find(x=>x.id===id);
     if (!c) return;
@@ -1225,7 +1257,6 @@
     renderList(); updateHome();
   }
 
-  /* Events */
   function bindEvents(){
     $("topNav").addEventListener("click", (e)=>{
       const b = e.target.closest("[data-sec]");
@@ -1248,11 +1279,22 @@
     $("mainBtn").addEventListener("click", saveData);
 
     $("search").addEventListener("input", renderList);
+
     $("typeFilter").addEventListener("change", ()=>{ renderList(); vibrate(6); });
     $("statusFilter").addEventListener("change", ()=>{ renderList(); vibrate(6); });
     $("sortMode").addEventListener("change", ()=>{ renderList(); vibrate(6); });
 
-    // ✅ إصلاح التذكير: زر يفتح واتساب + fallback إذا window.open انحجب
+    /* ✅ جديد: تبويبات شهري/سنوي/الكل */
+    $("typeTabs").addEventListener("click", (e)=>{
+      const btn = e.target.closest("[data-type-tab]");
+      if (!btn) return;
+      const v = btn.dataset.typeTab;
+      $("typeFilter").value = v;
+      syncTypeTabs();
+      renderList();
+      vibrate(10);
+    });
+
     $("reminder-list").addEventListener("click", (e)=>{
       const b = e.target.closest("[data-action='remind']");
       if (!b) return;
@@ -1286,12 +1328,10 @@
       if (a.dataset.action === "more") return openSheet(id);
     });
 
-    // Receipt modal
     $("closeReceiptBtn").addEventListener("click", ()=> { $("receiptModal").classList.add("hidden"); vibrate(8); });
     $("shareReceiptBtn").addEventListener("click", shareReceipt);
     $("receiptModal").addEventListener("click", (e)=> { if (e.target === $("receiptModal")) { $("receiptModal").classList.add("hidden"); vibrate(8); } });
 
-    // Renew modal
     $("closeRenewBtn").addEventListener("click", ()=> { $("renewModal").classList.add("hidden"); vibrate(8); });
     $("renewModal").addEventListener("click", (e)=> { if (e.target === $("renewModal")) { $("renewModal").classList.add("hidden"); vibrate(8); } });
 
@@ -1335,7 +1375,6 @@
 
     $("confirmRenewBtn").addEventListener("click", confirmRenew);
 
-    // Sheet
     $("sheetBackdrop").addEventListener("click", closeSheet);
     $("closeSheetBtn").addEventListener("click", closeSheet);
 
@@ -1358,7 +1397,6 @@
       deleteForever(id);
     });
 
-    // Toast close
     $("toastHost").addEventListener("click", (e)=>{
       const b = e.target.closest("[data-close-toast]");
       if (!b) return;
@@ -1366,7 +1404,6 @@
       if (node) node.remove();
     });
 
-    // Haptic generic for elements with data-haptic
     document.addEventListener("click", (e)=>{
       if (e.target.closest("[data-haptic]")) vibrate(8);
     }, { capture: true });
